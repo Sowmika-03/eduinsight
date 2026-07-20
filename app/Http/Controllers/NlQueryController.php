@@ -17,9 +17,16 @@ class NlQueryController extends Controller
         $this->nlpParser = $nlpParser;
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        $queries = NlQuery::where('user_id', Auth::id())->latest()->paginate(15);
+        $query = NlQuery::with('user');
+        if ($search = $request->get('search')) {
+            $query->where('natural_language_query', 'LIKE', "%{$search}%");
+        }
+        if ($status = $request->get('status')) {
+            $query->where('query_status', $status);
+        }
+        $queries = $query->latest()->paginate(15)->withQueryString();
         return view('nlp.queries', compact('queries'));
     }
 

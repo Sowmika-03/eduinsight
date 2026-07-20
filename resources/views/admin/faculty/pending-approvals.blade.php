@@ -1,120 +1,95 @@
 @extends('layouts.app')
 
-@section('title', 'Faculty Approvals')
+@section('title', 'Pending Faculty Approvals')
 
 @section('content')
-<div class="container-fluid mt-4">
-    <div class="row mb-4">
-        <div class="col-md-8">
-            <h2><i class="fas fa-clipboard-check"></i> Faculty Approvals</h2>
-            <p class="text-muted">Review and approve pending faculty accounts</p>
+<div class="space-y-6">
+
+    <!-- Header & Action Bar -->
+    <div class="bg-white border border-slate-200/80 rounded-2xl p-5 sm:p-6 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+            <div class="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-amber-600 mb-1">
+                <i class="fas fa-user-clock"></i>
+                <span>Faculty Governance &bull; Account Approvals</span>
+            </div>
+            <h1 class="text-2xl font-extrabold text-slate-900 tracking-tight">
+                Pending Faculty Registrations
+            </h1>
+            <p class="text-xs text-slate-500 font-medium mt-0.5">
+                Review and approve newly registered faculty accounts and assign initial student mentoring limits.
+            </p>
         </div>
-        <div class="col-md-4 text-end">
-            <a href="{{ route('admin.dashboard') }}" class="btn btn-secondary">
-                <i class="fas fa-arrow-left"></i> Back to Dashboard
+
+        <div class="flex flex-wrap items-center gap-2 shrink-0">
+            <a href="{{ route('admin.faculty.manage') }}" class="px-3.5 py-2 text-xs font-bold rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 transition border border-blue-200 flex items-center gap-1.5 shadow-2xs">
+                <i class="fas fa-users"></i>
+                <span>Faculty Directory</span>
+            </a>
+            <a href="{{ route('admin.dashboard') }}" class="px-3.5 py-2 text-xs font-bold rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition border border-slate-200 flex items-center gap-1.5">
+                <i class="fas fa-arrow-left"></i>
+                <span>Dashboard</span>
             </a>
         </div>
     </div>
 
-    @if ($pendingFaculty->isEmpty())
-        <div class="alert alert-info">
-            <i class="fas fa-check-circle"></i> No pending faculty approvals!
-        </div>
-    @else
-        <div class="row">
-            @foreach ($pendingFaculty as $faculty)
-                <div class="col-md-6 mb-3">
-                    <div class="card shadow-sm">
-                        <div class="card-header bg-warning bg-opacity-10">
-                            <div class="d-flex justify-content-between align-items-start">
-                                <div>
-                                    <h5 class="mb-1">{{ $faculty->user->name }}</h5>
-                                    <small class="text-muted">{{ $faculty->employee_id }}</small>
-                                </div>
-                                <span class="badge bg-warning">Pending</span>
-                            </div>
-                        </div>
-                        <div class="card-body">
-                            <dl class="row mb-0">
-                                <dt class="col-sm-5">Email:</dt>
-                                <dd class="col-sm-7">{{ $faculty->user->email }}</dd>
-
-                                <dt class="col-sm-5">Department:</dt>
-                                <dd class="col-sm-7">{{ $faculty->department }}</dd>
-
-                                <dt class="col-sm-5">Specialization:</dt>
-                                <dd class="col-sm-7">{{ $faculty->specialization }}</dd>
-
-                                <dt class="col-sm-5">Qualification:</dt>
-                                <dd class="col-sm-7">{{ $faculty->qualification }}</dd>
-
-                                <dt class="col-sm-5">Experience:</dt>
-                                <dd class="col-sm-7">{{ $faculty->experience_years }} years</dd>
-                            </dl>
-                        </div>
-                        <div class="card-footer bg-light">
-                            <button class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#approveModal{{ $faculty->id }}">
-                                <i class="fas fa-check"></i> Approve
-                            </button>
-                            <button class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#rejectModal{{ $faculty->id }}">
-                                <i class="fas fa-times"></i> Reject
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Approve Modal -->
-                <div class="modal fade" id="approveModal{{ $faculty->id }}" tabindex="-1">
-                    <div class="modal-dialog">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title">Approve Faculty: {{ $faculty->user->name }}</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                            </div>
-                            <form action="{{ route('admin.faculty.approve', $faculty) }}" method="POST">
-                                @csrf
-                                <div class="modal-body">
-                                    <div class="mb-3">
-                                        <label class="form-label">Maximum Students Allowed</label>
-                                        <input type="number" name="max_students" class="form-control" value="50" min="1" max="200" required>
-                                        <small class="text-muted">Maximum number of students this faculty can teach</small>
-                                    </div>
-                                </div>
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                                    <button type="submit" class="btn btn-success">Approve Faculty</button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Reject Modal -->
-                <div class="modal fade" id="rejectModal{{ $faculty->id }}" tabindex="-1">
-                    <div class="modal-dialog">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title">Reject Faculty: {{ $faculty->user->name }}</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                            </div>
-                            <form action="{{ route('admin.faculty.reject', $faculty) }}" method="POST">
-                                @csrf
-                                <div class="modal-body">
-                                    <div class="mb-3">
-                                        <label class="form-label">Reason for Rejection</label>
-                                        <textarea name="rejection_reason" class="form-control" rows="4" required placeholder="Enter reason..."></textarea>
-                                    </div>
-                                </div>
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                                    <button type="submit" class="btn btn-danger">Reject Faculty</button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-            @endforeach
+    @if (session('success'))
+        <div class="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold flex items-center justify-between shadow-2xs">
+            <div class="flex items-center gap-2">
+                <i class="fas fa-check-circle text-emerald-600"></i>
+                <span>{{ session('success') }}</span>
+            </div>
+            <button onclick="this.parentElement.remove()" class="text-emerald-400 hover:text-emerald-600">&times;</button>
         </div>
     @endif
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        @forelse ($pendingFaculty as $fac)
+            <div class="bg-white border border-amber-200 rounded-2xl p-5 shadow-xs flex flex-col justify-between space-y-4">
+                <div class="flex items-start justify-between border-b border-slate-100 pb-4">
+                    <div class="flex items-center gap-3">
+                        <div class="w-12 h-12 rounded-2xl bg-amber-500 text-white flex items-center justify-center text-sm font-extrabold shadow-sm">
+                            {{ strtoupper(substr($fac->user->name ?? 'F', 0, 2)) }}
+                        </div>
+                        <div>
+                            <h3 class="text-sm font-extrabold text-slate-900 leading-snug">
+                                {{ $fac->user->name }}
+                            </h3>
+                            <p class="text-xs text-slate-500 font-semibold mt-0.5">
+                                {{ $fac->department ?? 'MCA Department' }} &bull; {{ $fac->specialization ?? 'Computer Applications' }}
+                            </p>
+                            <span class="text-[11px] text-slate-400 font-medium block mt-0.5">
+                                {{ $fac->user->email }}
+                            </span>
+                        </div>
+                    </div>
+                    <span class="px-2.5 py-1 text-[10px] font-bold rounded-full bg-amber-100 text-amber-800 border border-amber-200">
+                        PENDING APPROVAL
+                    </span>
+                </div>
+
+                <form action="{{ route('admin.faculty.approve', $fac) }}" method="POST" class="space-y-3">
+                    @csrf
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Max Student Allocation Capacity:</label>
+                        <input type="number" name="max_students" value="30" min="1" max="200" required 
+                               class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 text-xs text-slate-900 font-semibold focus:ring-0 focus:border-blue-500">
+                    </div>
+
+                    <div class="flex items-center gap-2 pt-2">
+                        <button type="submit" class="flex-1 py-2 text-xs font-bold rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white transition shadow-2xs">
+                            <i class="fas fa-check-circle mr-1"></i> Approve Faculty
+                        </button>
+                    </div>
+                </form>
+            </div>
+        @empty
+            <div class="col-span-2 p-10 text-center bg-white border border-slate-200 rounded-2xl">
+                <i class="fas fa-user-check text-3xl text-emerald-500 mb-2 block"></i>
+                <h4 class="text-sm font-bold text-slate-800">All Faculty Approvals Complete!</h4>
+                <p class="text-xs text-slate-500 font-medium mt-1">There are no pending faculty registration requests waiting for administrative review.</p>
+            </div>
+        @endforelse
+    </div>
+
 </div>
 @endsection

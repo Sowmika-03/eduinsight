@@ -1,132 +1,145 @@
 @extends('layouts.app')
 
-@section('title', 'Manage Faculty & Students')
+@section('title', 'Faculty Management & Allocations')
 
 @section('content')
-<div class="container-fluid mt-4">
-    <div class="row mb-4">
-        <div class="col-md-8">
-            <h2><i class="fas fa-users-cog"></i> Manage Faculty & Students</h2>
-            <p class="text-muted">Approve faculty and assign students</p>
+<div class="space-y-6">
+
+    <!-- Header & Action Bar -->
+    <div class="bg-white border border-slate-200/80 rounded-2xl p-5 sm:p-6 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+            <div class="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-blue-600 mb-1">
+                <i class="fas fa-users-cog"></i>
+                <span>Academic Operations &bull; Faculty Directory</span>
+            </div>
+            <h1 class="text-2xl font-extrabold text-slate-900 tracking-tight">
+                Faculty Management & Student Allocation
+            </h1>
+            <p class="text-xs text-slate-500 font-medium mt-0.5">
+                Oversee department faculty workloads, student mentoring limits, and advisory allocations.
+            </p>
         </div>
-        <div class="col-md-4 text-end">
-            <a href="{{ route('admin.faculty.statistics') }}" class="btn btn-info me-2">
-                <i class="fas fa-chart-bar"></i> Statistics
+
+        <div class="flex flex-wrap items-center gap-2 shrink-0">
+            <a href="{{ route('admin.faculty.statistics') }}" class="px-3.5 py-2 text-xs font-bold rounded-xl bg-purple-50 hover:bg-purple-100 text-purple-700 transition border border-purple-200 flex items-center gap-1.5 shadow-2xs">
+                <i class="fas fa-chart-pie"></i>
+                <span>Workload Statistics</span>
             </a>
-            <a href="{{ route('admin.dashboard') }}" class="btn btn-secondary">
-                <i class="fas fa-arrow-left"></i> Back
+            <a href="{{ route('admin.faculty.pending') }}" class="px-3.5 py-2 text-xs font-bold rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-700 transition border border-amber-200 flex items-center gap-1.5 shadow-2xs">
+                <i class="fas fa-user-clock"></i>
+                <span>Pending Approvals</span>
+            </a>
+            <a href="{{ route('admin.dashboard') }}" class="px-3.5 py-2 text-xs font-bold rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition border border-slate-200 flex items-center gap-1.5">
+                <i class="fas fa-arrow-left"></i>
+                <span>Dashboard</span>
             </a>
         </div>
     </div>
 
     @if (session('success'))
-        <div class="alert alert-success alert-dismissible fade show">
-            <i class="fas fa-check-circle"></i> {{ session('success') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        <div class="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold flex items-center justify-between shadow-2xs">
+            <div class="flex items-center gap-2">
+                <i class="fas fa-check-circle text-emerald-600"></i>
+                <span>{{ session('success') }}</span>
+            </div>
+            <button onclick="this.parentElement.remove()" class="text-emerald-400 hover:text-emerald-600">&times;</button>
         </div>
     @endif
 
     @if (session('error'))
-        <div class="alert alert-danger alert-dismissible fade show">
-            <i class="fas fa-exclamation-circle"></i> {{ session('error') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        <div class="p-4 rounded-xl bg-red-50 border border-red-200 text-red-800 text-xs font-semibold flex items-center justify-between shadow-2xs">
+            <div class="flex items-center gap-2">
+                <i class="fas fa-exclamation-circle text-red-600"></i>
+                <span>{{ session('error') }}</span>
+            </div>
+            <button onclick="this.parentElement.remove()" class="text-red-400 hover:text-red-600">&times;</button>
         </div>
     @endif
 
-    <div class="row">
+    <!-- Faculty Cards Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         @forelse ($faculty as $fac)
-            <div class="col-md-6 mb-4">
-                <div class="card shadow-sm">
-                    <div class="card-header bg-primary text-white">
-                        <div class="d-flex justify-content-between align-items-center">
+            <div class="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-xs flex flex-col justify-between space-y-4 hover:border-blue-300 transition duration-150">
+                
+                <div>
+                    <!-- Faculty Card Header -->
+                    <div class="flex items-start justify-between border-b border-slate-100 pb-4 mb-4">
+                        <div class="flex items-center gap-3">
+                            <div class="w-12 h-12 rounded-2xl bg-purple-600 text-white flex items-center justify-center text-sm font-extrabold shadow-sm">
+                                {{ strtoupper(substr($fac->user->name ?? 'F', 0, 2)) }}
+                            </div>
                             <div>
-                                <h5 class="mb-1">{{ $fac->user->name }}</h5>
-                                <small>{{ $fac->department }} • {{ $fac->specialization }}</small>
+                                <h3 class="text-sm font-extrabold text-slate-900 leading-snug">
+                                    {{ $fac->user->name }}
+                                </h3>
+                                <p class="text-xs text-slate-500 font-semibold mt-0.5">
+                                    {{ $fac->department ?? 'MCA Department' }} &bull; {{ $fac->specialization ?? 'Computer Applications' }}
+                                </p>
+                                <span class="text-[11px] text-slate-400 font-medium block mt-0.5">
+                                    <i class="fas fa-envelope text-slate-300 mr-1"></i> {{ $fac->user->email }}
+                                </span>
                             </div>
-                            <div class="text-end">
-                                <div class="badge bg-success">{{ $fac->getAssignedStudentCount() }}/{{ $fac->max_students }}</div>
-                            </div>
+                        </div>
+
+                        <div class="text-right">
+                            <span class="px-2.5 py-1 text-[11px] font-bold rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 inline-block">
+                                {{ $fac->getAssignedStudentCount() }} / {{ $fac->max_students }} Students
+                            </span>
+                            <span class="text-[10px] text-slate-400 font-semibold block mt-1">
+                                Max Limit: {{ $fac->max_students }}
+                            </span>
                         </div>
                     </div>
 
-                    <div class="card-body">
-                        <div class="mb-3">
-                            <label class="form-label"><strong>Contact:</strong></label>
-                            <p>{{ $fac->user->email }}</p>
+                    <!-- Assigned Students Sub-Table -->
+                    <div>
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs font-bold text-slate-700 uppercase tracking-wider">
+                                Assigned Students ({{ $fac->assignedStudents->count() }})
+                            </span>
                         </div>
 
-                        <div class="mb-3">
-                            <label class="form-label"><strong>Assigned Students ({{ $fac->assignedStudents->count() }})</strong></label>
-                            @if ($fac->assignedStudents->isEmpty())
-                                <p class="text-muted">No students assigned yet</p>
-                            @else
-                                <div style="max-height: 200px; overflow-y: auto;">
-                                    <table class="table table-sm mb-0">
-                                        <tbody>
-                                            @foreach ($fac->assignedStudents as $student)
-                                                <tr>
-                                                    <td>{{ $student->user->name }}</td>
-                                                    <td class="text-muted small">{{ $student->student_id }}</td>
-                                                    <td class="text-end">
-                                                        <form action="{{ route('admin.faculty.remove-student', [$fac, $student]) }}" method="POST" style="display:inline;">
-                                                            @csrf
-                                                            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Remove this student?')">
-                                                                <i class="fas fa-trash"></i>
-                                                            </button>
-                                                        </form>
-                                                    </td>
-                                                </tr>
-                                            @endforeach
-                                        </tbody>
-                                    </table>
-                                </div>
-                            @endif
-                        </div>
-                    </div>
-
-                    <div class="card-footer bg-light">
-                        <div class="btn-group w-100" role="group">
-                            <a href="{{ route('admin.faculty.assign-form', $fac) }}" class="btn btn-sm btn-primary flex-grow-1">
-                                <i class="fas fa-plus"></i> Assign Students
-                            </a>
-                            <button class="btn btn-sm btn-warning flex-grow-1" data-bs-toggle="modal" data-bs-target="#updateMaxModal{{ $fac->id }}">
-                                <i class="fas fa-edit"></i> Change Max
-                            </button>
-                        </div>
+                        @if ($fac->assignedStudents->isEmpty())
+                            <div class="p-4 text-center text-slate-400 text-xs bg-slate-50 rounded-xl border border-slate-100 font-medium">
+                                No students assigned to this faculty member yet.
+                            </div>
+                        @else
+                            <div class="max-h-44 overflow-y-auto border border-slate-200 rounded-xl divide-y divide-slate-100 bg-slate-50/50">
+                                @foreach ($fac->assignedStudents as $student)
+                                    <div class="p-2.5 flex items-center justify-between text-xs hover:bg-white transition">
+                                        <div class="flex items-center gap-2">
+                                            <div class="w-6 h-6 rounded-full bg-slate-900 text-white flex items-center justify-center text-[10px] font-bold shrink-0">
+                                                {{ strtoupper(substr($student->user->name ?? 'S', 0, 1)) }}
+                                            </div>
+                                            <div>
+                                                <span class="font-bold text-slate-900 block leading-tight">{{ $student->user->name }}</span>
+                                                <span class="text-[10px] text-slate-400 font-semibold">{{ $student->student_id }} &bull; {{ $student->program }}</span>
+                                            </div>
+                                        </div>
+                                        <form action="{{ route('admin.faculty.remove-student', [$fac, $student]) }}" method="POST" onsubmit="return confirm('Remove student from faculty allocation?')">
+                                            @csrf
+                                            <button type="submit" class="p-1 text-slate-300 hover:text-red-600 transition" title="Remove Student">
+                                                <i class="fas fa-user-minus text-xs"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                @endforeach
+                            </div>
+                        @endif
                     </div>
                 </div>
 
-                <!-- Update Max Students Modal -->
-                <div class="modal fade" id="updateMaxModal{{ $fac->id }}" tabindex="-1">
-                    <div class="modal-dialog">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title">Update Max Students for {{ $fac->user->name }}</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                            </div>
-                            <form action="{{ route('admin.faculty.update-max', $fac) }}" method="POST">
-                                @csrf
-                                <div class="modal-body">
-                                    <div class="mb-3">
-                                        <label class="form-label">Maximum Students Allowed</label>
-                                        <input type="number" name="max_students" class="form-control" value="{{ $fac->max_students }}" min="{{ $fac->getAssignedStudentCount() }}" max="200" required>
-                                        <small class="text-muted">Current: {{ $fac->getAssignedStudentCount() }} assigned</small>
-                                    </div>
-                                </div>
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                                    <button type="submit" class="btn btn-warning">Update</button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
+                <!-- Faculty Card Actions Footer -->
+                <div class="pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
+                    <a href="{{ route('admin.faculty.assign-form', $fac) }}" class="flex-1 px-3 py-2 text-xs font-bold rounded-xl bg-blue-600 hover:bg-blue-700 text-white transition text-center shadow-2xs">
+                        <i class="fas fa-user-plus mr-1"></i> Manage Allocation
+                    </a>
                 </div>
             </div>
         @empty
-            <div class="col-12">
-                <div class="alert alert-info">
-                    <i class="fas fa-info-circle"></i> No approved faculty members yet!
-                </div>
+            <div class="col-span-2 p-8 text-center bg-white border border-slate-200 rounded-2xl">
+                <i class="fas fa-users-slash text-2xl text-slate-300 mb-2 block"></i>
+                <p class="text-xs text-slate-500 font-semibold">No faculty members found in the directory.</p>
             </div>
         @endforelse
     </div>
@@ -135,5 +148,6 @@
     <div class="mt-4">
         {{ $faculty->links() }}
     </div>
+
 </div>
 @endsection

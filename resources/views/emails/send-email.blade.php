@@ -3,184 +3,164 @@
 @section('title', 'Send Notification')
 
 @section('content')
-<div class="container mt-4">
-    <div class="row">
-        <div class="col-md-8 offset-md-2">
-            <div class="card shadow">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0">Send Email Notification</h5>
-                </div>
-                <div class="card-body">
-                    @if ($errors->any())
-                        <div class="alert alert-danger">
-                            <ul>
-                                @foreach ($errors->all() as $error)
-                                    <li>{{ $error }}</li>
-                                @endforeach
-                            </ul>
-                        </div>
-                    @endif
+<div class="space-y-6">
 
-                    <form action="{{ route('email.send.store') }}" method="POST">
-                        @csrf
-
-                        <!-- Recipient Type Selection -->
-                        <div class="mb-3">
-                            <label for="recipient_type" class="form-label">Send To:</label>
-                            <select name="recipient_type" id="recipient_type" class="form-control @error('recipient_type') is-invalid @enderror" required>
-                                <option value="">-- Select Recipient Type --</option>
-                                <option value="student">Single Student</option>
-                            </select>
-                            @error('recipient_type')
-                                <span class="invalid-feedback">{{ $message }}</span>
-                            @enderror
-                        </div>
-
-                        <!-- Student Selection (shown conditionally) -->
-                        <div class="mb-3" id="student-select" style="display: none;">
-                            <label for="student_id" class="form-label">Select Student:</label>
-                            <select name="student_id" id="student_id" class="form-control @error('student_id') is-invalid @enderror">
-                                <option value="">-- Choose Student --</option>
-                                @foreach ($students as $student)
-                                    <option value="{{ $student->id }}">{{ $student->user->name }} ({{ $student->student_id }})</option>
-                                @endforeach
-                            </select>
-                            @error('student_id')
-                                <span class="invalid-feedback">{{ $message }}</span>
-                            @enderror
-                        </div>
-
-                        <!-- Course Selection (shown for class/low attendance) -->
-                        <div class="mb-3" id="course-select" style="display: none;">
-                            <label for="course_id" class="form-label">Select Course:</label>
-                            <select name="course_id" id="course_id" class="form-control @error('course_id') is-invalid @enderror">
-                                <option value="">-- All Courses --</option>
-                                @foreach ($courses as $course)
-                                    <option value="{{ $course->id }}">{{ $course->course_name }} ({{ $course->course_code }})</option>
-                                @endforeach
-                            </select>
-                            @error('course_id')
-                                <span class="invalid-feedback">{{ $message }}</span>
-                            @enderror
-                        </div>
-
-                        <!-- Attendance Threshold -->
-                        <div class="mb-3" id="attendance-threshold" style="display: none;">
-                            <label for="attendance_threshold" class="form-label">Attendance Threshold (%):</label>
-                            <input type="number" name="attendance_threshold" id="attendance_threshold" 
-                                   class="form-control @error('attendance_threshold') is-invalid @enderror" 
-                                   value="75" min="1" max="100">
-                            <small class="form-text text-muted">Send to students below this percentage</small>
-                            @error('attendance_threshold')
-                                <span class="invalid-feedback">{{ $message }}</span>
-                            @enderror
-                        </div>
-
-                        <!-- Quick Templates -->
-                        <div class="mb-3">
-                            <label class="form-label">📋 Quick Templates:</label>
-                            <div class="btn-group w-100 flex-wrap gap-2" role="group">
-                                <button type="button" class="btn btn-outline-secondary btn-sm" 
-                                        onclick="setTemplate('Attendance Alert', 'Your attendance is below 75%. Please attend upcoming classes regularly to improve your academic performance.')"
-                                        title="Quick template for low attendance">
-                                    🎓 Attendance Alert
-                                </button>
-                                <button type="button" class="btn btn-outline-secondary btn-sm" 
-                                        onclick="setTemplate('Assignment Reminder', 'Please submit your pending assignments by the deadline. Contact me if you need any clarification.')"
-                                        title="Quick template for assignment reminders">
-                                    📝 Assignment Reminder
-                                </button>
-                                <button type="button" class="btn btn-outline-secondary btn-sm" 
-                                        onclick="setTemplate('Exam Notification', 'The upcoming exam is scheduled on the announced date. Please prepare well and review all covered topics.')"
-                                        title="Quick template for exam notification">
-                                    ✏️ Exam Info
-                                </button>
-                                <button type="button" class="btn btn-outline-secondary btn-sm" 
-                                        onclick="setTemplate('Low Grades Alert', 'Your recent grades are below average. I recommend meeting during office hours to discuss your progress.')"
-                                        title="Quick template for low grades">
-                                    📊 Grades Alert
-                                </button>
-                                <button type="button" class="btn btn-outline-secondary btn-sm" 
-                                        onclick="setTemplate('Class Announcement', 'Please note the important class announcement. Check your email regularly for course updates.')"
-                                        title="Quick template for class announcements">
-                                    📢 Announcement
-                                </button>
-                                <button type="button" class="btn btn-outline-secondary btn-sm" 
-                                        onclick="setTemplate('Academic Performance', 'Great job! Your consistent performance is commendable. Keep maintaining this excellence.')"
-                                        title="Quick template for positive feedback">
-                                    ⭐ Appreciation
-                                </button>
-                            </div>
-                            <small class="form-text text-muted d-block mt-2">Click any template to auto-fill subject and message</small>
-                        </div>
-
-                        <!-- Subject -->
-                        <div class="mb-3">
-                            <label for="subject" class="form-label">Subject:</label>
-                            <input type="text" name="subject" id="subject" 
-                                   class="form-control @error('subject') is-invalid @enderror" 
-                                   placeholder="Enter email subject" required
-                                   value="{{ old('subject') }}">
-                            @error('subject')
-                                <span class="invalid-feedback">{{ $message }}</span>
-                            @enderror
-                        </div>
-
-                        <!-- Message -->
-                        <div class="mb-3">
-                            <label for="message" class="form-label">Message:</label>
-                            <textarea name="message" id="message" 
-                                      class="form-control @error('message') is-invalid @enderror" 
-                                      rows="6" placeholder="Enter your message here" required>{{ old('message') }}</textarea>
-                            <small class="form-text text-muted">Min 10 characters | <span id="charCount">0</span>/{{ strlen(old('message', '')) }}</small>
-                            @error('message')
-                                <span class="invalid-feedback">{{ $message }}</span>
-                            @enderror
-                        </div>
-
-                        <!-- Buttons -->
-                        <div class="d-flex gap-2">
-                            <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-envelope"></i> Send Email
-                            </button>
-                            <a href="{{ route('email.history') }}" class="btn btn-secondary">
-                                <i class="fas fa-history"></i> View History
-                            </a>
-                            <button type="reset" class="btn btn-outline-secondary">Clear</button>
-                        </div>
-                    </form>
-                </div>
+    <!-- Header & Action Bar -->
+    <div class="bg-white border border-slate-200/80 rounded-2xl p-5 sm:p-6 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+            <div class="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-blue-600 mb-1">
+                <i class="fas fa-paper-plane"></i>
+                <span>Institutional Communication Gateway</span>
             </div>
+            <h1 class="text-2xl font-extrabold text-slate-900 tracking-tight">
+                Send Parent & Student Email Notification
+            </h1>
+            <p class="text-xs text-slate-500 font-medium mt-0.5">
+                Dispatch automated academic risk warnings, attendance alerts, and official university communications.
+            </p>
+        </div>
+
+        <div class="flex items-center gap-2 shrink-0">
+            <a href="{{ route('email.history') }}" class="px-3.5 py-2 text-xs font-bold rounded-xl bg-purple-50 hover:bg-purple-100 text-purple-700 transition border border-purple-200 flex items-center gap-1.5 shadow-2xs">
+                <i class="fas fa-history"></i>
+                <span>Email Delivery Logs</span>
+            </a>
+            <a href="{{ route('admin.dashboard') }}" class="px-3.5 py-2 text-xs font-bold rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition border border-slate-200">
+                <i class="fas fa-arrow-left mr-1"></i> Dashboard
+            </a>
         </div>
     </div>
+
+    <!-- Main Compose Form (Full Width 90-95%) -->
+    <div class="bg-white border border-slate-200/90 rounded-2xl p-6 sm:p-8 shadow-xs">
+        
+        <form action="{{ route('email.send.store') }}" method="POST" class="space-y-6">
+            @csrf
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                
+                <!-- Recipient Type Selection -->
+                <div>
+                    <label for="recipient_type" class="block text-xs font-bold text-slate-800 uppercase tracking-wider mb-1.5">
+                        Recipient Target Group:
+                    </label>
+                    <select name="recipient_type" id="recipient_type" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-xs text-slate-900 font-semibold focus:bg-white focus:border-blue-500 focus:ring-0" required>
+                        <option value="student" {{ old('recipient_type', request('recipient_type', 'student')) === 'student' ? 'selected' : '' }}>Single Student / Parent Contact</option>
+                        <option value="class" {{ old('recipient_type', request('recipient_type')) === 'class' ? 'selected' : '' }}>Entire Course Batch</option>
+                        <option value="low_attendance" {{ old('recipient_type', request('recipient_type')) === 'low_attendance' ? 'selected' : '' }}>Students Below Attendance Threshold</option>
+                    </select>
+                </div>
+
+                <!-- Student Selection (Conditional) -->
+                <div id="student-select">
+                    <label for="student_id" class="block text-xs font-bold text-slate-800 uppercase tracking-wider mb-1.5">
+                        Select Targeted Student:
+                    </label>
+                    <select name="student_id" id="student_id" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-xs text-slate-900 font-semibold focus:bg-white focus:border-blue-500 focus:ring-0">
+                        <option value="">-- Select Student --</option>
+                        @foreach ($students as $student)
+                            <option value="{{ $student->id }}" {{ (old('student_id', request('student_id')) == $student->id) ? 'selected' : '' }}>
+                                {{ $student->user->name }} ({{ $student->student_id }} &bull; {{ $student->program }})
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <!-- Course Selection (Conditional) -->
+                <div id="course-select" class="hidden">
+                    <label for="course_id" class="block text-xs font-bold text-slate-800 uppercase tracking-wider mb-1.5">
+                        Select Course Subject:
+                    </label>
+                    <select name="course_id" id="course_id" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-xs text-slate-900 font-semibold focus:bg-white focus:border-blue-500 focus:ring-0">
+                        <option value="">-- All Courses --</option>
+                        @foreach ($courses as $course)
+                            <option value="{{ $course->id }}" {{ (old('course_id', request('course_id')) == $course->id) ? 'selected' : '' }}>
+                                {{ $course->course_name }} ({{ $course->course_code }})
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <!-- Attendance Threshold (Conditional) -->
+                <div id="attendance-threshold" class="hidden">
+                    <label for="attendance_threshold" class="block text-xs font-bold text-slate-800 uppercase tracking-wider mb-1.5">
+                        Attendance Cut-off Threshold (%):
+                    </label>
+                    <input type="number" name="attendance_threshold" id="attendance_threshold" 
+                           class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-xs text-slate-900 font-semibold focus:bg-white focus:border-blue-500 focus:ring-0" 
+                           value="{{ old('attendance_threshold', 75) }}" min="1" max="100">
+                </div>
+
+            </div>
+
+            <!-- Quick Template Buttons -->
+            <div>
+                <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
+                    📋 Institutional Quick Templates:
+                </label>
+                <div class="flex flex-wrap gap-2">
+                    <button type="button" onclick="setTemplate('Attendance Alert', 'Your attendance is currently below 75%. Please attend upcoming classes regularly to satisfy university academic eligibility thresholds.')"
+                            class="px-3 py-1.5 text-xs font-bold rounded-xl bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-700 transition border border-slate-200 flex items-center gap-1.5">
+                        🎓 Attendance Warning
+                    </button>
+                    <button type="button" onclick="setTemplate('Assignment Reminder', 'Please submit your pending coursework assignments by the specified deadline. Contact your course advisor for guidance.')"
+                            class="px-3 py-1.5 text-xs font-bold rounded-xl bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-700 transition border border-slate-200 flex items-center gap-1.5">
+                        📝 Assignment Reminder
+                    </button>
+                    <button type="button" onclick="setTemplate('Exam Notification', 'The upcoming semester examination schedule has been published. Please review course topics and confirm seating arrangements.')"
+                            class="px-3 py-1.5 text-xs font-bold rounded-xl bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-700 transition border border-slate-200 flex items-center gap-1.5">
+                        ✏️ Exam Information
+                    </button>
+                    <button type="button" onclick="setTemplate('Low Grades Alert', 'Your recent internal exam scores are below passing thresholds. Please schedule a remedial mentoring session during office hours.')"
+                            class="px-3 py-1.5 text-xs font-bold rounded-xl bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-700 transition border border-slate-200 flex items-center gap-1.5">
+                        📊 Grades Alert
+                    </button>
+                </div>
+            </div>
+
+            <!-- Subject -->
+            <div>
+                <label for="subject" class="block text-xs font-bold text-slate-800 uppercase tracking-wider mb-1.5">
+                    Email Subject Line:
+                </label>
+                <input type="text" name="subject" id="subject" 
+                       class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-xs font-semibold text-slate-900 placeholder-slate-400 focus:bg-white focus:border-blue-500 focus:ring-0" 
+                       placeholder="Enter email subject..." required value="{{ old('subject', request('subject')) }}">
+            </div>
+
+            <!-- Message Body -->
+            <div>
+                <label for="message" class="block text-xs font-bold text-slate-800 uppercase tracking-wider mb-1.5">
+                    Email Message Content:
+                </label>
+                <textarea name="message" id="message" rows="6" 
+                          class="w-full bg-slate-50 border border-slate-200 rounded-xl p-4 text-xs font-medium text-slate-900 placeholder-slate-400 focus:bg-white focus:border-blue-500 focus:ring-0 resize-none" 
+                          placeholder="Compose official email content here..." required>{{ old('message', request('message')) }}</textarea>
+            </div>
+
+            <!-- Submit Button Bar -->
+            <div class="flex items-center gap-3 pt-2 border-t border-slate-100">
+                <button type="submit" class="px-6 py-2.5 text-xs font-bold rounded-xl bg-blue-600 hover:bg-blue-700 text-white transition shadow-2xs flex items-center gap-2">
+                    <i class="fas fa-paper-plane text-xs"></i>
+                    <span>Send Notification Email</span>
+                </button>
+                <a href="{{ route('email.history') }}" class="px-4 py-2.5 text-xs font-bold rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition border border-slate-200">
+                    View Delivery Logs
+                </a>
+            </div>
+
+        </form>
+    </div>
+
 </div>
 
+@endsection
+
+@section('scripts')
 <script>
-// Set template subject and message
 function setTemplate(subject, message) {
     document.getElementById('subject').value = subject;
     document.getElementById('message').value = message;
-    updateCharCount();
-    
-    // Visual feedback
-    const messageField = document.getElementById('message');
-    messageField.classList.add('border-success', 'border-2');
-    setTimeout(() => {
-        messageField.classList.remove('border-success', 'border-2');
-    }, 1000);
-}
-
-// Update character count
-function updateCharCount() {
-    const message = document.getElementById('message').value;
-    document.getElementById('charCount').textContent = message.length;
-    
-    // Visual feedback if below minimum
-    if (message.length < 10) {
-        document.getElementById('message').classList.add('is-invalid');
-    } else {
-        document.getElementById('message').classList.remove('is-invalid');
-    }
 }
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -188,25 +168,18 @@ document.addEventListener('DOMContentLoaded', function() {
     const studentSelect = document.getElementById('student-select');
     const courseSelect = document.getElementById('course-select');
     const attendanceThreshold = document.getElementById('attendance-threshold');
-    const messageField = document.getElementById('message');
 
     function updateVisibility() {
         const type = recipientType.value;
-        
-        studentSelect.style.display = (type === 'student' || type === 'parent') ? 'block' : 'none';
-        courseSelect.style.display = (type === 'class' || type === 'low_attendance') ? 'block' : 'none';
-        attendanceThreshold.style.display = (type === 'low_attendance') ? 'block' : 'none';
+        if (studentSelect) studentSelect.classList.toggle('hidden', type !== 'student');
+        if (courseSelect) courseSelect.classList.toggle('hidden', type !== 'class' && type !== 'low_attendance');
+        if (attendanceThreshold) attendanceThreshold.classList.toggle('hidden', type !== 'low_attendance');
     }
 
-    recipientType.addEventListener('change', updateVisibility);
-    
-    // Initialize character counter
-    if (messageField) {
-        messageField.addEventListener('input', updateCharCount);
-        updateCharCount();
+    if (recipientType) {
+        recipientType.addEventListener('change', updateVisibility);
+        updateVisibility();
     }
-    
-    updateVisibility();
 });
 </script>
 @endsection

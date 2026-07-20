@@ -67,9 +67,14 @@
                                                             <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                                                         </div>
                                                         <div class="modal-body">
-                                                            <ul>
-                                                                @foreach(json_decode($risk->recommendations) as $rec)
-                                                                    <li>{{ $rec }}</li>
+                                                            <ul class="text-xs text-slate-700 font-medium space-y-1">
+                                                                @php
+                                                                    $recs = is_string($risk->recommendations) && is_array(json_decode($risk->recommendations, true)) 
+                                                                        ? json_decode($risk->recommendations, true) 
+                                                                        : (array) ($risk->recommendations ?? 'Maintain regular attendance and complete course assignments.');
+                                                                @endphp
+                                                                @foreach($recs as $rec)
+                                                                    <li>• {{ $rec }}</li>
                                                                 @endforeach
                                                             </ul>
                                                         </div>
