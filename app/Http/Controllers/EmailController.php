@@ -20,8 +20,20 @@ class EmailController extends Controller
      */
     public function showSendForm()
     {
-        $courses = Course::all();
-        $students = Student::with('user')->get();
+        $user = Auth::user();
+        if ($user->role->slug === 'faculty' && $user->faculty) {
+            $courses = Course::where('faculty_id', $user->faculty->id)->get();
+            $studentIds = Enrollment::whereIn('course_id', $courses->pluck('id'))->pluck('student_id')->unique();
+            $students = Student::whereIn('id', $studentIds)->with('user')->get();
+        } elseif ($user->role->slug === 'hod' && $user->hod) {
+            $deptFacultyIds = \App\Models\Faculty::where('department', $user->hod->department)->pluck('id');
+            $courses = Course::whereIn('faculty_id', $deptFacultyIds)->get();
+            $studentIds = Enrollment::whereIn('course_id', $courses->pluck('id'))->pluck('student_id')->unique();
+            $students = Student::whereIn('id', $studentIds)->with('user')->get();
+        } else {
+            $courses = Course::all();
+            $students = Student::with('user')->get();
+        }
 
         return view('emails.send-email', compact('courses', 'students'));
     }

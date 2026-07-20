@@ -90,24 +90,41 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/dashboard', [FacultyDashboardController::class, 'index'])->name('dashboard');
         Route::get('/courses', [FacultyDashboardController::class, 'courses'])->name('courses');
         Route::get('/course/{id}', [FacultyDashboardController::class, 'course'])->name('course.show');
+        Route::get('/student/{id}', [FacultyDashboardController::class, 'studentShow'])->name('student.show');
         Route::get('/attendance', [FacultyDashboardController::class, 'attendance'])->name('attendance');
         Route::post('/attendance', [FacultyDashboardController::class, 'recordAttendance'])->name('attendance.store');
         Route::put('/attendance/{attendance}', [FacultyDashboardController::class, 'updateAttendance'])->name('attendance.update');
+        Route::get('/marks', [FacultyDashboardController::class, 'marks'])->name('marks');
+        Route::get('/marks/index', [FacultyDashboardController::class, 'marks'])->name('marks.index');
         Route::post('/marks', [FacultyDashboardController::class, 'addMarks'])->name('marks.store');
+        Route::get('/analytics', [FacultyDashboardController::class, 'analytics'])->name('analytics');
+        Route::get('/ai', [FacultyDashboardController::class, 'ai'])->name('ai');
+        Route::post('/ai/query', [FacultyDashboardController::class, 'processAiQuery'])->name('ai.query');
     });
 
     // Student Routes
     Route::middleware(['authRole:student'])->prefix('student')->name('student.')->group(function () {
         Route::get('/dashboard', [StudentDashboardController::class, 'index'])->name('dashboard');
+        Route::get('/courses', [StudentDashboardController::class, 'courses'])->name('courses');
+        Route::get('/course/{id}', [StudentDashboardController::class, 'courseShow'])->name('course.show');
         Route::get('/marks', [StudentDashboardController::class, 'marks'])->name('marks');
         Route::get('/attendance', [StudentDashboardController::class, 'attendance'])->name('attendance');
+        Route::get('/performance', [StudentDashboardController::class, 'performance'])->name('performance');
         Route::get('/risk-prediction', [StudentDashboardController::class, 'riskPrediction'])->name('risk');
+        Route::get('/ai', [StudentDashboardController::class, 'ai'])->name('ai');
+        Route::post('/ai/query', [StudentDashboardController::class, 'processAiQuery'])->name('ai.query');
+        Route::get('/notifications', [StudentDashboardController::class, 'notifications'])->name('notifications');
+        Route::get('/resources', [StudentDashboardController::class, 'resources'])->name('resources');
+        Route::get('/profile', [StudentDashboardController::class, 'profile'])->name('profile');
+        Route::get('/goals', [StudentDashboardController::class, 'goals'])->name('goals');
+        Route::get('/achievements', [StudentDashboardController::class, 'achievements'])->name('achievements');
         Route::get('/alerts', [StudentDashboardController::class, 'alerts'])->name('alerts');
     });
 
     // NLP Query Routes
     Route::prefix('nlp')->name('nlp.')->group(function () {
         Route::get('/queries', [NlQueryController::class, 'index'])->name('index');
+        Route::get('/history', [NlQueryController::class, 'index'])->name('queries');
         Route::get('/create', [NlQueryController::class, 'create'])->name('create');
         Route::post('/store', [NlQueryController::class, 'store'])->name('store');
         Route::get('/query/{nlQuery}', [NlQueryController::class, 'show'])->name('show');

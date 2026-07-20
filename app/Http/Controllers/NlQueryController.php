@@ -20,6 +20,9 @@ class NlQueryController extends Controller
     public function index(Request $request)
     {
         $query = NlQuery::with('user');
+        if (Auth::user()->role->slug !== 'admin') {
+            $query->where('user_id', Auth::id());
+        }
         if ($search = $request->get('search')) {
             $query->where('natural_language_query', 'LIKE', "%{$search}%");
         }
