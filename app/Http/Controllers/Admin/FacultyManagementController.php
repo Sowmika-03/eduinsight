@@ -63,10 +63,35 @@ class FacultyManagementController extends Controller
     /**
      * Show all approved faculty with their student assignments
      */
-    public function manageFaculty()
+    public function manageFaculty(Request $request)
     {
-        $faculty = Faculty::with(['user', 'assignedStudents'])
-            ->paginate(10);
+        $query = Faculty::with(['user', 'assignedStudents']);
+
+        if ($search = $request->get('search')) {
+            $query->where(function($q) use ($search) {
+                $q->where('department', 'LIKE', "%{$search}%")
+                  ->orWhere('specialization', 'LIKE', "%{$search}%")
+                  ->orWhereHas('user', fn($u) => $u->where('name', 'LIKE', "%{$search}%")->orWhere('email', 'LIKE', "%{$search}%"));
+            });
+        }
+
+        if ($program = $request->get('program')) {
+            $query->where('department', 'LIKE', "%{$program}%");
+        }
+
+        if ($branch = $request->get('branch')) {
+            $query->where('specialization', 'LIKE', "%{$branch}%");
+        }
+
+        if ($status = $request->get('status')) {
+            if ($status === 'active') {
+                $query->where('approval_status', 'approved');
+            } elseif ($status === 'pending') {
+                $query->where('approval_status', 'pending');
+            }
+        }
+
+        $faculty = $query->paginate(10)->withQueryString();
 
         return view('admin.faculty.manage-faculty', compact('faculty'));
     }
@@ -154,14 +179,6 @@ class FacultyManagementController extends Controller
      */
     public function statistics()
     {
-        $stats = [
-            'total_faculty'     => Faculty::count(),
-            'approved_faculty'  => Faculty::count(),
-            'pending_faculty'   => Faculty::where('approval_status', 'pending')->count(),
-            'total_assignments' => \DB::table('faculty_students')->count(),
-            'avg_pass_rate'     => 88.5,
-        ];
-
         $facultyStats = Faculty::with(['user', 'assignedStudents', 'courses'])
             ->get()
             ->map(function ($faculty) {
@@ -170,15 +187,14 @@ class FacultyManagementController extends Controller
                 $coursesCount  = $faculty->courses->count();
                 $studentIds    = $faculty->assignedStudents->pluck('id');
 
-                $avgAttendance = 85.0;
+                $avgAttendance = 82.5;
                 $avgMarks      = 74.5;
                 $passRate      = 88.0;
                 $highRiskCount = 0;
 
                 if ($studentIds->isNotEmpty()) {
                     $avgAttendance = Attendance::whereIn('student_id', $studentIds)
-                        ->selectRaw('AVG(CASE WHEN status = "present" THEN 100 ELSE 0 END) as avg')
-                        ->value('avg') ?? 82.5;
+                        ->avg('attendance_percentage') ?? 82.5;
 
                     $avgMarks = Mark::whereIn('student_id', $studentIds)
                         ->avg('total_marks') ?? 72.0;
@@ -211,6 +227,20 @@ class FacultyManagementController extends Controller
                     'performance_score'  => $perfScore,
                 ];
             });
+
+        $avgPassRate = $facultyStats->isNotEmpty() ? round($facultyStats->avg('pass_rate'), 1) : 88.5;
+        $avgAtt = $facultyStats->isNotEmpty() ? round($facultyStats->avg('avg_attendance'), 1) : 84.5;
+        $highPerfCount = $facultyStats->where('performance_score', '>=', 80)->count();
+
+        $stats = [
+            'total_faculty'         => Faculty::count(),
+            'approved_faculty'      => Faculty::count(),
+            'pending_faculty'       => Faculty::where('approval_status', 'pending')->count(),
+            'total_assignments'     => \DB::table('faculty_students')->count(),
+            'avg_pass_rate'         => $avgPassRate,
+            'avg_attendance'        => $avgAtt,
+            'high_performing_count' => $highPerfCount,
+        ];
 
         return view('admin.faculty.statistics', compact('stats', 'facultyStats'));
     }

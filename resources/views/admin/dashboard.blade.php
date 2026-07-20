@@ -230,7 +230,99 @@
 </div>
 
 <!-- ==========================================================================
-     UNIQUE STUDENT ACADEMIC RISK SUMMARY BREAKDOWN
+     SECTION 3: COMPACT ANALYTICS FILTER BAR
+     ========================================================================== -->
+<form method="GET" action="{{ route('admin.dashboard') }}" class="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 mb-8 shadow-xs" x-data="{ selectedProgram: '{{ request('program') }}', selectedBranch: '{{ request('branch') }}' }">
+    <div class="flex flex-wrap items-center justify-between gap-3 mb-3 pb-3 border-b border-slate-100">
+        <div class="flex items-center gap-2">
+            <i class="fas fa-filter text-blue-600 text-sm"></i>
+            <h4 class="text-xs font-bold uppercase tracking-wider text-slate-800">Compact Analytics Filter Bar</h4>
+        </div>
+        <span class="text-[11px] text-slate-400 font-medium">Enterprise Analytics Filter &bull; Branch visible only for B.Tech</span>
+    </div>
+
+    <!-- Filter Control Inputs -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:flex lg:flex-wrap items-end gap-3">
+        <!-- Program Dropdown -->
+        <div class="w-full sm:w-auto min-w-[150px]">
+            <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Program</label>
+            <select name="program" x-model="selectedProgram" @change="if(selectedProgram !== 'B.Tech') { selectedBranch = ''; }; $el.form.submit()" class="w-full text-xs py-1.5 px-3 bg-slate-50 border border-slate-200 rounded-lg text-slate-700 focus:bg-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition">
+                <option value="">All Programs</option>
+                <option value="B.Tech" {{ request('program') === 'B.Tech' ? 'selected' : '' }}>B.Tech</option>
+                <option value="MCA" {{ request('program') === 'MCA' ? 'selected' : '' }}>MCA</option>
+                <option value="MBA" {{ request('program') === 'MBA' ? 'selected' : '' }}>MBA</option>
+            </select>
+        </div>
+
+        <!-- Branch Dropdown (Visible ONLY for B.Tech) -->
+        <div x-show="selectedProgram === 'B.Tech'" x-cloak class="w-full sm:w-auto min-w-[140px]">
+            <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Branch</label>
+            <select name="branch" x-model="selectedBranch" @change="$el.form.submit()" class="w-full text-xs py-1.5 px-3 bg-slate-50 border border-slate-200 rounded-lg text-slate-700 focus:bg-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition">
+                <option value="">All Branches</option>
+                <option value="CSE" {{ request('branch') === 'CSE' ? 'selected' : '' }}>CSE</option>
+                <option value="IT" {{ request('branch') === 'IT' ? 'selected' : '' }}>IT</option>
+            </select>
+        </div>
+
+        <!-- Semester Dropdown -->
+        <div class="w-full sm:w-auto min-w-[140px]">
+            <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Semester</label>
+            <select name="semester" onchange="this.form.submit()" class="w-full text-xs py-1.5 px-3 bg-slate-50 border border-slate-200 rounded-lg text-slate-700 focus:bg-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition">
+                <option value="">All Semesters</option>
+                @for($i=1; $i<=8; $i++)
+                    <option value="{{ $i }}" {{ request('semester') == $i ? 'selected' : '' }}>Semester {{ $i }}</option>
+                @endfor
+            </select>
+        </div>
+
+        <!-- Risk Dropdown -->
+        <div class="w-full sm:w-auto min-w-[140px]">
+            <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Risk Level</label>
+            <select name="risk" onchange="this.form.submit()" class="w-full text-xs py-1.5 px-3 bg-slate-50 border border-slate-200 rounded-lg text-slate-700 focus:bg-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition">
+                <option value="">All Risk Levels</option>
+                <option value="High Risk" {{ request('risk') === 'High Risk' ? 'selected' : '' }}>High Risk</option>
+                <option value="Medium Risk" {{ request('risk') === 'Medium Risk' ? 'selected' : '' }}>Medium Risk</option>
+                <option value="Low Risk" {{ request('risk') === 'Low Risk' ? 'selected' : '' }}>Low Risk</option>
+            </select>
+        </div>
+
+        <!-- Reset Button -->
+        <div class="w-full sm:w-auto">
+            <a href="{{ route('admin.dashboard') }}" class="w-full sm:w-auto px-4 py-1.5 text-xs font-semibold rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 transition border border-slate-200 flex items-center justify-center gap-1.5">
+                <i class="fas fa-undo text-[10px]"></i> Reset
+            </a>
+        </div>
+    </div>
+</form>
+
+<!-- ==========================================================================
+     SECTION 4: CHARTS
+     ========================================================================== -->
+<x-dashboard.section-header 
+    title="Predictive Analytics & Branch Performance" 
+    subtitle="Shows academic performance across programmes and risk distribution." 
+    badge="Visual Analytics" />
+
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-10">
+    <!-- Chart 1: Risk Level Distribution -->
+    <div class="space-y-4">
+        <x-dashboard.chart-card 
+            id="riskChart" 
+            title="Academic Risk Level Distribution" 
+            description="Proportional breakdown of Low Risk, Medium Risk, and High Risk evaluations" />
+    </div>
+
+    <!-- Chart 2: Branch Performance Comparison -->
+    <div class="space-y-4">
+        <x-dashboard.chart-card 
+            id="branchPerformanceChart" 
+            title="Branch Attendance & Pass Rate Comparison" 
+            description="Comparative analysis of Attendance Rate % vs Pass Rate % across CSE, IT, MCA, and MBA" />
+    </div>
+</div>
+
+<!-- ==========================================================================
+     SECTION 5: ACADEMIC RISK SUMMARY
      ========================================================================== -->
 <div class="bg-white border border-slate-200 rounded-2xl p-6 mb-10 shadow-xs">
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-100 pb-4 mb-5">
@@ -241,7 +333,7 @@
                     200 Unique Students
                 </span>
             </div>
-            <p class="text-xs text-slate-500 mt-0.5 font-medium">Categorized breakdown of 200 unique students based on overall academic risk evaluations</p>
+            <p class="text-xs text-slate-500 mt-0.5 font-medium">Displays the current distribution of students by predicted academic risk.</p>
         </div>
         <a href="{{ route('admin.alerts') }}" class="px-4 py-2 text-xs font-bold rounded-xl bg-blue-600 hover:bg-blue-700 text-white transition shadow-2xs inline-flex items-center gap-2 self-start md:self-auto">
             <i class="fas fa-bell"></i>
@@ -289,196 +381,14 @@
 </div>
 
 <!-- ==========================================================================
-     SECTION 3: GLOBAL ANALYTICS FILTER BAR
-     ========================================================================== -->
-<div class="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 mb-6 shadow-xs">
-    <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-3 pb-3 border-b border-slate-100">
-        <div class="flex items-center gap-2">
-            <i class="fas fa-filter text-blue-600 text-sm"></i>
-            <h4 class="text-xs font-bold uppercase tracking-wider text-slate-800">Global Analytics Filter Bar</h4>
-        </div>
-        <span class="text-[11px] text-slate-400 font-medium">Default Selection: All</span>
-    </div>
-
-    <!-- Filter Control Inputs -->
-    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-        <div>
-            <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Program</label>
-            <select class="text-xs py-1.5 px-2 bg-slate-50 border border-slate-200 rounded-lg w-full text-slate-700 focus:bg-white focus:border-blue-500">
-                <option value="">All Programs</option>
-                <option value="B.Tech">B.Tech</option>
-                <option value="MCA">MCA</option>
-                <option value="MBA">MBA</option>
-            </select>
-        </div>
-
-        <div>
-            <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Branch</label>
-            <select class="text-xs py-1.5 px-2 bg-slate-50 border border-slate-200 rounded-lg w-full text-slate-700 focus:bg-white focus:border-blue-500">
-                <option value="">All Branches</option>
-                <option value="CSE">CSE</option>
-                <option value="IT">IT</option>
-                <option value="MCA">MCA</option>
-                <option value="MBA">MBA</option>
-            </select>
-        </div>
-
-        <div>
-            <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Semester</label>
-            <select class="text-xs py-1.5 px-2 bg-slate-50 border border-slate-200 rounded-lg w-full text-slate-700 focus:bg-white focus:border-blue-500">
-                <option value="">All Semesters</option>
-                <option value="1">Semester 1</option>
-                <option value="2">Semester 2</option>
-            </select>
-        </div>
-
-        <div>
-            <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Attendance</label>
-            <select class="text-xs py-1.5 px-2 bg-slate-50 border border-slate-200 rounded-lg w-full text-slate-700 focus:bg-white focus:border-blue-500">
-                <option value="">All Attendance</option>
-                <option value="75_above">&ge; 75% Attendance</option>
-                <option value="75_below">&lt; 75% Attendance</option>
-            </select>
-        </div>
-
-        <div>
-            <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Marks</label>
-            <select class="text-xs py-1.5 px-2 bg-slate-50 border border-slate-200 rounded-lg w-full text-slate-700 focus:bg-white focus:border-blue-500">
-                <option value="">All Marks</option>
-                <option value="40_above">&ge; 40 Marks (Pass)</option>
-                <option value="40_below">&lt; 40 Marks (Fail)</option>
-            </select>
-        </div>
-
-        <div>
-            <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Risk Level</label>
-            <select class="text-xs py-1.5 px-2 bg-slate-50 border border-slate-200 rounded-lg w-full text-slate-700 focus:bg-white focus:border-blue-500">
-                <option value="">All Risk Levels</option>
-                <option value="High Risk">High Risk</option>
-                <option value="Medium Risk">Medium Risk</option>
-                <option value="Low Risk">Low Risk</option>
-            </select>
-        </div>
-    </div>
-</div>
-
-<!-- ==========================================================================
-     SECTION 3 & 8: CHARTS WITH DYNAMIC INSIGHTS & RECOMMENDATIONS BELOW
+     SECTION 6: RECENT RISK ALERTS
      ========================================================================== -->
 <x-dashboard.section-header 
-    title="Predictive Analytics & Branch Performance" 
-    subtitle="Interactive data visualizations coupled with dynamic AI insight summaries" 
-    badge="Visual Analytics" />
-
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-10">
-    <!-- Chart 1: Risk Level Distribution -->
-    <div class="space-y-4">
-        <x-dashboard.chart-card 
-            id="riskChart" 
-            title="Academic Risk Level Distribution" 
-            description="Proportional breakdown of Low Risk, Medium Risk, and High Risk evaluations" />
-
-        <!-- Dynamic Insights Below Chart 1 -->
-        <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-2.5">
-            <div class="flex items-start gap-2.5 text-xs text-slate-800">
-                <span class="font-bold text-blue-600 uppercase tracking-wider shrink-0 bg-blue-100 px-2 py-0.5 rounded">Insight</span>
-                <p class="font-medium text-slate-700 leading-snug">
-                    EduInsight AI identifies <strong class="text-slate-900">{{ $uniqueHighRiskCount }} students ({{ round(($uniqueHighRiskCount/$totalStudents)*100, 1) }}%)</strong> currently classified as High Academic Risk across departments.
-                </p>
-            </div>
-            <div class="flex items-start gap-2.5 text-xs text-slate-800 pt-2 border-t border-slate-200/60">
-                <span class="font-bold text-purple-600 uppercase tracking-wider shrink-0 bg-purple-100 px-2 py-0.5 rounded">Recommendation</span>
-                <p class="font-medium text-slate-700 leading-snug">
-                    Schedule 1-on-1 mentoring sessions for the {{ $uniqueHighRiskCount }} High Risk students and notify their assigned faculty advisors.
-                </p>
-            </div>
-        </div>
-    </div>
-
-    <!-- Chart 2: Branch Performance Comparison (Upgraded Visual Analytics) -->
-    <div class="space-y-4">
-        <x-dashboard.chart-card 
-            id="branchPerformanceChart" 
-            title="Branch Attendance & Pass Rate Comparison" 
-            description="Comparative analysis of Attendance Rate % vs Pass Rate % across CSE, IT, MCA, and MBA" />
-
-        <!-- Dynamic Insights Below Chart 2 -->
-        <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-2.5">
-            <div class="flex items-start gap-2.5 text-xs text-slate-800">
-                <span class="font-bold text-blue-600 uppercase tracking-wider shrink-0 bg-blue-100 px-2 py-0.5 rounded">Insight</span>
-                <p class="font-medium text-slate-700 leading-snug">
-                    The MCA and CSE departments currently lead institutional attendance with average attendance exceeding <strong class="text-slate-900">81.0%</strong>.
-                </p>
-            </div>
-            <div class="flex items-start gap-2.5 text-xs text-slate-800 pt-2 border-t border-slate-200/60">
-                <span class="font-bold text-purple-600 uppercase tracking-wider shrink-0 bg-purple-100 px-2 py-0.5 rounded">Recommendation</span>
-                <p class="font-medium text-slate-700 leading-snug">
-                    Sustain weekly attendance monitoring in MCA and B.Tech CSE to maintain overall institutional pass rates above {{ round($passPercentage, 1) }}%.
-                </p>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- ==========================================================================
-     SECTION 4 & 5: AI INSIGHTS & RECOMMENDATION CARDS
-     ========================================================================== -->
-<x-dashboard.section-header 
-    title="EduInsight AI Predictive Summaries" 
-    subtitle="Automated intelligence summaries generated from real database performance metrics" 
-    badge="EduInsight AI" />
-
-<div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-10">
-    <x-dashboard.insight-card 
-        title="High Academic Risk Warning" 
-        message="{{ $uniqueHighRiskCount }} students ({{ round(($uniqueHighRiskCount/$totalStudents)*100, 1) }}%) are currently classified as High Academic Risk." 
-        type="danger" 
-        badge="Critical Risk" 
-        actionText="View Risk Alerts" 
-        actionUrl="{{ route('admin.alerts') }}">
-        High risk status indicates student attendance under 70% or exam totals under passing score threshold.
-    </x-dashboard.insight-card>
-
-    <x-dashboard.insight-card 
-        title="Attendance Benchmark Compliance" 
-        message="Average institutional attendance has reached {{ round($avgAttendance, 1) }}%, exceeding the 75.0% compliance baseline." 
-        type="success" 
-        badge="Positive Trend" 
-        actionText="Manage Student Records" 
-        actionUrl="{{ route('admin.students') }}">
-        MCA Semester 1 and B.Tech CSE lead in consistent attendance compliance rates.
-    </x-dashboard.insight-card>
-
-    <x-dashboard.insight-card 
-        title="Automated Warning Alerts" 
-        message="{{ $totalAlertsCount }} system warning alerts actively logged for student attendance and mark drops." 
-        type="warning" 
-        badge="Monitoring" 
-        actionText="Review System Alerts" 
-        actionUrl="{{ route('admin.alerts') }}">
-        Faculty advisors and HODs have been notified for immediate student mentoring.
-    </x-dashboard.insight-card>
-
-    <x-dashboard.insight-card 
-        title="Faculty Allocation & Curriculum" 
-        message="20 approved faculty members are actively assigned across all 64 curriculum course offerings." 
-        type="info" 
-        badge="Curriculum Ready" 
-        actionText="Manage Faculty Members" 
-        actionUrl="{{ route('admin.faculty.manage') }}">
-        Every course has an assigned instructor with an 8:1 student-to-faculty advisor ratio.
-    </x-dashboard.insight-card>
-</div>
-
-<!-- ==========================================================================
-     STUDENT RISK ALERTS TABLE (With Renamed 'Actions' Column & Icons + Labels)
-     ========================================================================== -->
-<x-dashboard.section-header 
-    title="Recent High Priority Student Alerts" 
-    subtitle="Live log of automated alerts triggered for student attendance or academic grade drops" 
+    title="Recent Risk Alerts" 
+    subtitle="Shows latest students requiring attention and automated system warnings." 
     badge="Live Alerts" />
 
-<div class="bg-white border border-slate-200 rounded-2xl p-5 sm:p-6 mb-10 shadow-xs">
+<div class="bg-white border border-slate-200 rounded-2xl p-5 sm:p-6 mb-6 shadow-xs">
     <div class="table-responsive">
         <table class="table">
             <thead>
@@ -499,7 +409,6 @@
                         $studentName = $studentUser?->name ?? 'Student';
                         $courseCode = $alert->course?->course_code ?? 'Course';
                         
-                        // Shortcut Email Pre-fill URL
                         $emailShortcutUrl = route('email.send', [
                             'recipient_type' => 'student',
                             'student_id'     => $alert->student_id,
@@ -508,7 +417,6 @@
                         ]);
                     @endphp
                     <tr class="hover:bg-slate-50/80 transition duration-150">
-                        <!-- Student Avatar & Name -->
                         <td>
                             <div class="flex items-center gap-3">
                                 <div class="w-8 h-8 rounded-full bg-slate-900 text-white flex items-center justify-center text-xs font-bold shadow-2xs shrink-0">
@@ -521,20 +429,17 @@
                             </div>
                         </td>
 
-                        <!-- Course Code & Name -->
                         <td>
                             <span class="text-xs font-bold text-slate-800 block">{{ $alert->course?->course_code ?? 'N/A' }}</span>
                             <span class="text-[11px] text-slate-500 font-medium">{{ $alert->course?->course_name ?? 'General' }}</span>
                         </td>
 
-                        <!-- Alert Type Pill -->
                         <td>
                             <span class="px-2.5 py-0.5 text-[10px] font-bold rounded-md bg-slate-100 text-slate-700 uppercase tracking-wider border border-slate-200">
                                 {{ str_replace('_', ' ', $alert->alert_type) }}
                             </span>
                         </td>
 
-                        <!-- Severity Badge -->
                         <td>
                             @if($alert->severity === 'high')
                                 <span class="px-2.5 py-0.5 text-[10px] font-bold rounded-full bg-red-100 text-red-800 border border-red-200">HIGH SEVERITY</span>
@@ -545,12 +450,10 @@
                             @endif
                         </td>
 
-                        <!-- Date -->
                         <td class="text-xs text-slate-500 font-medium">
                             {{ $alert->alert_date ? $alert->alert_date->format('M d, Y') : 'Recent' }}
                         </td>
 
-                        <!-- Actions Column: Send Email, View Profile, View Analytics -->
                         <td class="text-right">
                             <div class="flex items-center justify-end gap-2">
                                 <a href="{{ $emailShortcutUrl }}" title="Send Warning Email" class="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-md bg-blue-50 text-blue-700 hover:bg-blue-600 hover:text-white transition border border-blue-100">
@@ -578,115 +481,6 @@
                 @endforelse
             </tbody>
         </table>
-    </div>
-</div>
-
-<!-- ==========================================================================
-     SECTION 6 & 7: SYSTEM ACTIVITY & RECOMMENDED INTERVENTIONS
-     ========================================================================== -->
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
-    <!-- Operational Events (1 column) -->
-    <div>
-        <x-dashboard.section-header 
-            title="Operational Logs" 
-            subtitle="Real-time system events" />
-
-        <x-dashboard.activity-card 
-            title="Recent Activity Feed" 
-            subtitle="System audit events">
-            
-            <div class="py-3 flex items-start gap-3">
-                <div class="w-7 h-7 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center text-xs shrink-0">
-                    <i class="fas fa-check-circle"></i>
-                </div>
-                <div>
-                    <p class="text-xs font-semibold text-slate-800">Database Population Verified</p>
-                    <p class="text-[11px] text-slate-500">200 Students & 20 Faculty active.</p>
-                    <span class="text-[10px] text-slate-400 font-medium">Just now</span>
-                </div>
-            </div>
-
-            <div class="py-3 flex items-start gap-3">
-                <div class="w-7 h-7 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center text-xs shrink-0">
-                    <i class="fas fa-brain"></i>
-                </div>
-                <div>
-                    <p class="text-xs font-semibold text-slate-800">EduInsight AI Risk Evaluation</p>
-                    <p class="text-[11px] text-slate-500">Evaluated 1,600 academic risk records.</p>
-                    <span class="text-[10px] text-slate-400 font-medium">10 mins ago</span>
-                </div>
-            </div>
-
-            <div class="py-3 flex items-start gap-3">
-                <div class="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center text-xs shrink-0">
-                    <i class="fas fa-envelope"></i>
-                </div>
-                <div>
-                    <p class="text-xs font-semibold text-slate-800">Gmail SMTP Gateway Ready</p>
-                    <p class="text-[11px] text-slate-500">Parent warning email system operational.</p>
-                    <span class="text-[10px] text-slate-400 font-medium">Active</span>
-                </div>
-            </div>
-
-        </x-dashboard.activity-card>
-    </div>
-
-    <!-- Recommended Interventions (2 columns) -->
-    <div class="lg:col-span-2">
-        <x-dashboard.section-header 
-            title="Recommended Academic Interventions" 
-            subtitle="Actionable guidance generated from current performance trends" 
-            badge="AI Guidance" />
-
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <x-dashboard.recommendation-card 
-                title="Schedule Mandatory Attendance Counseling" 
-                description="Initiate 1-on-1 mentoring sessions for students with attendance below 70% to prevent hall ticket detention." 
-                riskLevel="High Risk" 
-                actionText="Manage Student Records" 
-                actionUrl="{{ route('admin.students') }}">
-                Affects {{ $uniqueHighRiskCount }} High Risk students in MCA and B.Tech CSE sections.
-            </x-dashboard.recommendation-card>
-
-            <x-dashboard.recommendation-card 
-                title="Mid-Term Remedial Tutorial Program" 
-                description="Conduct extra tutorial sessions for core subjects showing total marks under 45." 
-                riskLevel="Medium Risk" 
-                actionText="Manage Faculty Members" 
-                actionUrl="{{ route('admin.faculty.manage') }}">
-                Focus on MCA101 Data Structures and CSE202 Database Systems.
-            </x-dashboard.recommendation-card>
-        </div>
-    </div>
-</div>
-
-<!-- ==========================================================================
-     FOOTER SYSTEM HEALTH SUMMARY
-     ========================================================================== -->
-<div class="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-xs mb-6">
-    <div class="flex flex-wrap items-center justify-between gap-4">
-        <div class="flex items-center gap-3">
-            <div class="w-3 h-3 rounded-full bg-emerald-500 animate-pulse"></div>
-            <div>
-                <span class="text-xs font-bold text-slate-900 block leading-none">System Health Status: 100% Operational</span>
-                <span class="text-[11px] text-slate-500 font-medium">All predictive academic engines running smoothly</span>
-            </div>
-        </div>
-
-        <div class="flex flex-wrap items-center gap-6 text-xs text-slate-600 font-medium">
-            <div class="flex items-center gap-1.5">
-                <i class="fas fa-database text-blue-600"></i>
-                <span>Database: <strong class="text-slate-800">eduinsight (MySQL)</strong></span>
-            </div>
-            <div class="flex items-center gap-1.5">
-                <i class="fas fa-robot text-purple-600"></i>
-                <span>Prediction Service: <strong class="text-slate-800">EduInsight AI Ready</strong></span>
-            </div>
-            <div class="flex items-center gap-1.5">
-                <i class="fas fa-paper-plane text-emerald-600"></i>
-                <span>Email Gateway: <strong class="text-slate-800">Gmail Active</strong></span>
-            </div>
-        </div>
     </div>
 </div>
 

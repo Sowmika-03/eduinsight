@@ -59,6 +59,48 @@
         ::-webkit-scrollbar-track { background: #f1f5f9; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 9999px; }
         ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        /* Remove Spreadsheet Appearance Globally (Modern Component Table UI) */
+        .table-responsive {
+            border-radius: 1rem !important;
+            border: 1px solid #e2e8f0 !important;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04) !important;
+            background-color: #ffffff !important;
+            overflow: hidden !important;
+        }
+        table, .table {
+            border-collapse: separate !important;
+            border-spacing: 0 !important;
+            width: 100% !important;
+            border: none !important;
+        }
+        table th, table td, .table th, .table td {
+            border-left: none !important;
+            border-right: none !important;
+            border-top: none !important;
+        }
+        table th, .table th {
+            background-color: #f8fafc !important;
+            color: #475569 !important;
+            font-size: 0.6875rem !important;
+            font-weight: 700 !important;
+            text-transform: uppercase !important;
+            letter-spacing: 0.06em !important;
+            padding: 0.875rem 1.25rem !important;
+            border-bottom: 1px solid #e2e8f0 !important;
+        }
+        table td, .table td {
+            padding: 1rem 1.25rem !important;
+            border-bottom: 1px solid #f1f5f9 !important;
+            color: #1e293b !important;
+            vertical-align: middle !important;
+        }
+        table tbody tr:hover, .table tbody tr:hover {
+            background-color: #f8fafc !important;
+        }
+        table tbody tr:last-child td, .table tbody tr:last-child td {
+            border-bottom: none !important;
+        }
     </style>
     
     @yield('styles')
@@ -297,6 +339,10 @@
                             <i class="fas fa-chart-area w-4 text-center text-slate-400"></i>
                             <span>Department Analytics</span>
                         </a>
+                        <a href="{{ route('hod.ai') }}" class="flex items-center gap-3 px-3 py-2 text-xs font-medium rounded-lg transition {{ Route::currentRouteName() == 'hod.ai' ? 'bg-blue-50 text-blue-700 font-semibold border-l-4 border-blue-600' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900' }}">
+                            <i class="fas fa-robot w-4 text-center text-purple-600"></i>
+                            <span>EduInsight AI Assistant</span>
+                        </a>
                     </div>
                 </div>
             @endif
@@ -350,7 +396,7 @@
 
     <!-- MAIN CONTENT AREA -->
     <main class="lg:ml-64 pt-16 min-h-screen flex flex-col">
-        <div class="p-4 sm:p-6 lg:p-8 flex-1 max-w-[1700px] w-full mx-auto">
+        <div class="p-4 sm:p-6 lg:p-8 flex-1 max-w-[95%] w-full mx-auto">
             
             <!-- Global Flash Messages -->
             @if(isset($errors) && $errors->any())

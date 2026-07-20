@@ -76,6 +76,10 @@ Route::middleware(['auth'])->group(function () {
         
         // Analytics
         Route::get('/analytics', [HODController::class, 'analytics'])->name('analytics');
+
+        // EduInsight AI Assistant
+        Route::get('/ai', [HODController::class, 'ai'])->name('ai');
+        Route::post('/ai/query', [HODController::class, 'processAiQuery'])->name('ai.query');
         
         // Student Alerts API
         Route::get('/student/{student}/alerts', [HODController::class, 'getStudentAlerts'])->name('student.alerts');

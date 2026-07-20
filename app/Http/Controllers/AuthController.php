@@ -111,6 +111,7 @@ class AuthController extends Controller
 
         return match($role) {
             'admin' => '/admin/dashboard',
+            'hod' => '/hod/dashboard',
             'faculty' => '/faculty/dashboard',
             'student' => '/student/dashboard',
             'parent' => '/parent/dashboard',
