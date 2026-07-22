@@ -1,20 +1,20 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\AuthController;
-use App\Http\Controllers\AdminDashboardController;
-use App\Http\Controllers\HODController;
-use App\Http\Controllers\FacultyDashboardController;
-use App\Http\Controllers\StudentDashboardController;
+use App\Http\Controllers\Auth\AuthController;
+use App\Http\Controllers\Admin\AdminDashboardController;
+use App\Http\Controllers\Admin\FacultyManagementController;
+use App\Http\Controllers\HOD\HODController;
+use App\Http\Controllers\Faculty\FacultyDashboardController;
+use App\Http\Controllers\Student\StudentDashboardController;
 use App\Http\Controllers\NlQueryController;
 use App\Http\Controllers\MlRiskPredictionController;
 use App\Http\Controllers\EmailController;
-use App\Http\Controllers\Admin\FacultyManagementController;
 
 // Home & Auth Routes
 Route::get('/', function () {
     if (!auth()->check()) {
-        return redirect()->route('login');
+        return view('index');
     }
     
     // Redirect authenticated users to their role-specific dashboard

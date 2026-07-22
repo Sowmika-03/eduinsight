@@ -40,7 +40,7 @@
     foreach ($programNames as $pName) {
         $studentIds = \App\Models\Student::where('program', 'LIKE', "%{$pName}%")->pluck('id');
         if ($studentIds->isNotEmpty()) {
-            $attAvg = \App\Models\Attendance::whereIn('student_id', $studentIds)->avg('attendance_percentage') ?? 80;
+            $attAvg = \App\Models\Attendance::whereIn('student_id', $studentIds)->selectRaw("AVG(CASE WHEN status = 'present' THEN 100.0 ELSE 0.0 END) as average")->value('average') ?? 80;
             $passCount = \App\Models\Mark::whereIn('student_id', $studentIds)->where('total_marks', '>=', 40)->count();
             $totalMarksCount = \App\Models\Mark::whereIn('student_id', $studentIds)->count();
             $passRate = $totalMarksCount > 0 ? ($passCount * 100.0 / $totalMarksCount) : 85;
@@ -244,7 +244,7 @@
     <!-- Filter Control Inputs -->
     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:flex lg:flex-wrap items-end gap-3">
         <!-- Program Dropdown -->
-        <div class="w-full sm:w-auto min-w-[150px]">
+        <div class="w-full sm:w-auto min-w-37.5">
             <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Program</label>
             <select name="program" x-model="selectedProgram" @change="if(selectedProgram !== 'B.Tech') { selectedBranch = ''; }; $el.form.submit()" class="w-full text-xs py-1.5 px-3 bg-slate-50 border border-slate-200 rounded-lg text-slate-700 focus:bg-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition">
                 <option value="">All Programs</option>
@@ -255,7 +255,7 @@
         </div>
 
         <!-- Branch Dropdown (Visible ONLY for B.Tech) -->
-        <div x-show="selectedProgram === 'B.Tech'" x-cloak class="w-full sm:w-auto min-w-[140px]">
+        <div x-show="selectedProgram === 'B.Tech'" x-cloak class="w-full sm:w-auto min-w-35">
             <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Branch</label>
             <select name="branch" x-model="selectedBranch" @change="$el.form.submit()" class="w-full text-xs py-1.5 px-3 bg-slate-50 border border-slate-200 rounded-lg text-slate-700 focus:bg-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition">
                 <option value="">All Branches</option>
@@ -265,7 +265,7 @@
         </div>
 
         <!-- Semester Dropdown -->
-        <div class="w-full sm:w-auto min-w-[140px]">
+        <div class="w-full sm:w-auto min-w-35">
             <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Semester</label>
             <select name="semester" onchange="this.form.submit()" class="w-full text-xs py-1.5 px-3 bg-slate-50 border border-slate-200 rounded-lg text-slate-700 focus:bg-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition">
                 <option value="">All Semesters</option>
@@ -276,7 +276,7 @@
         </div>
 
         <!-- Risk Dropdown -->
-        <div class="w-full sm:w-auto min-w-[140px]">
+        <div class="w-full sm:w-auto min-w-35">
             <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Risk Level</label>
             <select name="risk" onchange="this.form.submit()" class="w-full text-xs py-1.5 px-3 bg-slate-50 border border-slate-200 rounded-lg text-slate-700 focus:bg-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition">
                 <option value="">All Risk Levels</option>

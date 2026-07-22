@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\Student;
 use App\Models\Course;
@@ -32,8 +33,10 @@ class AdminDashboardController extends Controller
         if ($program) {
             $studentQuery->where('program', 'LIKE', "%{$program}%");
         }
-        if ($branch) {
-            $studentQuery->where('program', 'LIKE', "%{$branch}%");
+        if ($branch && (!$program || $program === 'B.Tech')) {
+            $studentQuery->whereIn('branch_id', function($q) use ($branch) {
+                $q->select('id')->from('branches')->where('branch_name', 'LIKE', "%{$branch}%");
+            });
         }
         if ($semester) {
             $studentQuery->where('semester', $semester);
@@ -54,7 +57,8 @@ class AdminDashboardController extends Controller
         } elseif ($program || $branch || $semester || $risk) {
             $avgAttendanceQuery->whereRaw('1 = 0');
         }
-        $avgAttendance = $avgAttendanceQuery->selectRaw('AVG(attendance_percentage) as average')->value('average') ?? 0.0;
+        $avgAttendanceVal = $avgAttendanceQuery->selectRaw("AVG(CASE WHEN status = 'present' THEN 100.0 ELSE 0.0 END) as average")->value('average');
+        $avgAttendance = $avgAttendanceVal !== null ? round($avgAttendanceVal, 1) : 0.0;
 
         // 2. Pass Rate
         $markQuery = Mark::query();
@@ -106,9 +110,15 @@ class AdminDashboardController extends Controller
         $branchPassData = [];
 
         foreach ($programNames as $pName) {
-            $pStudentQuery = Student::where('program', 'LIKE', "%{$pName}%");
+            $pStudentQuery = Student::whereIn('branch_id', function($q) use ($pName) {
+                $q->select('id')->from('branches')->where('branch_name', $pName);
+            });
             if ($program)  $pStudentQuery->where('program', 'LIKE', "%{$program}%");
-            if ($branch)   $pStudentQuery->where('program', 'LIKE', "%{$branch}%");
+            if ($branch) {
+                $pStudentQuery->whereIn('branch_id', function($q) use ($branch) {
+                    $q->select('id')->from('branches')->where('branch_name', 'LIKE', "%{$branch}%");
+                });
+            }
             if ($semester) $pStudentQuery->where('semester', $semester);
             if ($risk) {
                 $pStudentQuery->whereHas('academicRisks', fn($q) => $q->where('risk_level', $risk));
@@ -116,7 +126,7 @@ class AdminDashboardController extends Controller
             $pStudentIds = $pStudentQuery->pluck('id');
 
             if ($pStudentIds->isNotEmpty()) {
-                $attAvg = Attendance::whereIn('student_id', $pStudentIds)->avg('attendance_percentage') ?? 80;
+                $attAvg = Attendance::whereIn('student_id', $pStudentIds)->selectRaw("AVG(CASE WHEN status = 'present' THEN 100.0 ELSE 0.0 END) as average")->value('average') ?? 80;
                 $pMarks = Mark::whereIn('student_id', $pStudentIds);
                 $pTotal = (clone $pMarks)->count();
                 $pPass  = (clone $pMarks)->where('total_marks', '>=', 40)->count();
@@ -163,11 +173,16 @@ class AdminDashboardController extends Controller
                   ->orWhereHas('user', fn($u) => $u->where('name', 'LIKE', "%{$search}%")->orWhere('email', 'LIKE', "%{$search}%"));
             });
         }
-        if ($program = $request->get('program')) {
+        $program = $request->get('program');
+        $branch = $request->get('branch');
+
+        if ($program) {
             $query->where('program', 'LIKE', "%{$program}%");
         }
-        if ($branch = $request->get('branch')) {
-            $query->where('program', 'LIKE', "%{$branch}%");
+        if ($branch && (!$program || $program === 'B.Tech')) {
+            $query->whereIn('branch_id', function($q) use ($branch) {
+                $q->select('id')->from('branches')->where('branch_name', 'LIKE', "%{$branch}%");
+            });
         }
         if ($semester = $request->get('semester')) {
             $query->where('semester', $semester);
@@ -179,16 +194,18 @@ class AdminDashboardController extends Controller
         }
         if ($attendance = $request->get('attendance')) {
             if ($attendance === '75_above') {
-                $query->whereHas('attendance', function($q) {
-                    $q->selectRaw('student_id, AVG(attendance_percentage) as avg_att')
+                $query->whereIn('id', function($q) {
+                    $q->select('student_id')
+                      ->from('attendance')
                       ->groupBy('student_id')
-                      ->havingRaw('AVG(attendance_percentage) >= 75');
+                      ->havingRaw("AVG(CASE WHEN status = 'present' THEN 100.0 ELSE 0.0 END) >= 75");
                 });
             } elseif ($attendance === '75_below') {
-                $query->whereHas('attendance', function($q) {
-                    $q->selectRaw('student_id, AVG(attendance_percentage) as avg_att')
+                $query->whereIn('id', function($q) {
+                    $q->select('student_id')
+                      ->from('attendance')
                       ->groupBy('student_id')
-                      ->havingRaw('AVG(attendance_percentage) < 75');
+                      ->havingRaw("AVG(CASE WHEN status = 'present' THEN 100.0 ELSE 0.0 END) < 75");
                 });
             }
         }
@@ -207,13 +224,22 @@ class AdminDashboardController extends Controller
                   ->orWhere('course_name', 'LIKE', "%{$search}%");
             });
         }
-        if ($program = $request->get('program')) {
+        $program = $request->get('program');
+        $branch = $request->get('branch');
+
+        if ($program) {
             $query->where(function($q) use ($program) {
-                $q->where('course_code', 'LIKE', "%{$program}%")
-                  ->orWhere('course_name', 'LIKE', "%{$program}%");
+                if ($program === 'B.Tech') {
+                    $q->where('course_code', 'LIKE', 'CSE%')
+                      ->orWhere('course_code', 'LIKE', 'IT%')
+                      ->orWhere('course_name', 'LIKE', '%B.Tech%');
+                } else {
+                    $q->where('course_code', 'LIKE', "%{$program}%")
+                      ->orWhere('course_name', 'LIKE', "%{$program}%");
+                }
             });
         }
-        if ($branch = $request->get('branch')) {
+        if ($branch && (!$program || $program === 'B.Tech')) {
             $query->where(function($q) use ($branch) {
                 $q->where('course_code', 'LIKE', "%{$branch}%")
                   ->orWhere('course_name', 'LIKE', "%{$branch}%");
@@ -248,11 +274,16 @@ class AdminDashboardController extends Controller
         if ($severity = $request->get('severity')) {
             $query->where('severity', $severity);
         }
-        if ($program = $request->get('program')) {
+        $program = $request->get('program');
+        $branch = $request->get('branch');
+
+        if ($program) {
             $query->whereHas('student', fn($s) => $s->where('program', 'LIKE', "%{$program}%"));
         }
-        if ($branch = $request->get('branch')) {
-            $query->whereHas('student', fn($s) => $s->where('program', 'LIKE', "%{$branch}%"));
+        if ($branch && (!$program || $program === 'B.Tech')) {
+            $query->whereHas('student', fn($s) => $s->whereIn('branch_id', function($q) use ($branch) {
+                $q->select('id')->from('branches')->where('branch_name', 'LIKE', "%{$branch}%");
+            }));
         }
         if ($semester = $request->get('semester')) {
             $query->whereHas('student', fn($s) => $s->where('semester', $semester));

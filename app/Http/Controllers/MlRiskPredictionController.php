@@ -9,7 +9,12 @@ use Illuminate\Support\Facades\Http;
 
 class MlRiskPredictionController extends Controller
 {
-    protected $mlApiUrl = 'http://localhost:5000';
+    protected $mlApiUrl;
+
+    public function __construct()
+    {
+        $this->mlApiUrl = env('ML_API_URL', 'http://127.0.0.1:5005');
+    }
 
     public function predictRisk($studentId, $courseId)
     {

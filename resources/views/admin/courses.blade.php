@@ -27,7 +27,7 @@
 
     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:flex lg:flex-wrap items-end gap-3">
         <!-- 🔍 Search Course -->
-        <div class="flex-1 min-w-[180px]">
+        <div class="flex-1 min-w-45">
             <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Search Course</label>
             <div class="relative">
                 <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
@@ -36,7 +36,7 @@
         </div>
 
         <!-- Program Dropdown -->
-        <div class="w-full sm:w-auto min-w-[140px]">
+        <div class="w-full sm:w-auto min-w-35">
             <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Program</label>
             <select name="program" x-model="selectedProgram" @change="if(selectedProgram !== 'B.Tech') { selectedBranch = ''; }; $el.form.submit()" class="w-full text-xs py-1.5 px-3 bg-slate-50 border border-slate-200 rounded-lg text-slate-700 focus:bg-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition">
                 <option value="">All Programs</option>
@@ -47,9 +47,9 @@
         </div>
 
         <!-- Branch Dropdown (Visible ONLY for B.Tech) -->
-        <div x-show="selectedProgram === 'B.Tech'" x-cloak class="w-full sm:w-auto min-w-[130px]">
+        <div x-show="selectedProgram === 'B.Tech'" x-cloak class="w-full sm:w-auto min-w-32.5">
             <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Branch</label>
-            <select name="branch" x-model="selectedBranch" @change="$el.form.submit()" class="w-full text-xs py-1.5 px-3 bg-slate-50 border border-slate-200 rounded-lg text-slate-700 focus:bg-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition">
+            <select name="branch" x-model="selectedBranch" :disabled="selectedProgram !== 'B.Tech'" @change="$el.form.submit()" class="w-full text-xs py-1.5 px-3 bg-slate-50 border border-slate-200 rounded-lg text-slate-700 focus:bg-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition">
                 <option value="">All Branches</option>
                 <option value="CSE" {{ request('branch') === 'CSE' ? 'selected' : '' }}>CSE</option>
                 <option value="IT" {{ request('branch') === 'IT' ? 'selected' : '' }}>IT</option>
@@ -57,7 +57,7 @@
         </div>
 
         <!-- Semester Dropdown -->
-        <div class="w-full sm:w-auto min-w-[130px]">
+        <div class="w-full sm:w-auto min-w-32.5">
             <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Semester</label>
             <select name="semester" onchange="this.form.submit()" class="w-full text-xs py-1.5 px-3 bg-slate-50 border border-slate-200 rounded-lg text-slate-700 focus:bg-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition">
                 <option value="">All Semesters</option>
@@ -68,7 +68,7 @@
         </div>
 
         <!-- Faculty Dropdown -->
-        <div class="w-full sm:w-auto min-w-[150px]">
+        <div class="w-full sm:w-auto min-w-37.5">
             <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Faculty</label>
             <select name="faculty" onchange="this.form.submit()" class="w-full text-xs py-1.5 px-3 bg-slate-50 border border-slate-200 rounded-lg text-slate-700 focus:bg-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition">
                 <option value="">All Faculty</option>

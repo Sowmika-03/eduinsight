@@ -6,7 +6,7 @@
 <div class="space-y-6">
 
     <!-- TOP GREETING BANNER -->
-    <div class="bg-gradient-to-r from-slate-900 via-blue-950 to-slate-900 rounded-3xl p-6 sm:p-8 text-white shadow-xl relative overflow-hidden border border-blue-900/50">
+    <div class="bg-slate-900 bg-linear-to-r from-slate-900 via-blue-950 to-slate-900 rounded-3xl p-6 sm:p-8 text-white shadow-xl relative overflow-hidden border border-blue-900/50" style="background: linear-gradient(to right, #0f172a, #0b1329, #0f172a);">
         <!-- Subtle Decorative Background Pattern -->
         <div class="absolute -right-10 -bottom-10 w-80 h-80 bg-blue-600/10 rounded-full blur-3xl pointer-events-none"></div>
         <div class="absolute right-40 -top-10 w-60 h-60 bg-purple-600/10 rounded-full blur-2xl pointer-events-none"></div>
@@ -26,7 +26,7 @@
                         $hour = date('H');
                         $greeting = $hour < 12 ? 'Good Morning' : ($hour < 17 ? 'Good Afternoon' : 'Good Evening');
                     @endphp
-                    {{ $greeting }}, Dr. {{ Auth::user()->name }}
+                    {{ $greeting }}, {{ Auth::user()->name }}
                 </h1>
                 
                 <div class="flex flex-wrap items-center gap-3 text-xs text-slate-300 font-medium">
@@ -40,7 +40,10 @@
                     </span>
                     <span class="flex items-center gap-1.5 bg-slate-800/80 px-3 py-1 rounded-xl border border-slate-700">
                         <i class="fas fa-calendar-alt text-emerald-400"></i>
-                        SEM 4 &bull; 2026 Academic Term
+                        @php
+                            $semesters = $courses->pluck('semester')->unique()->sort()->implode(', ');
+                        @endphp
+                        SEM {{ $semesters ?: '4' }} &bull; {{ date('Y') }} Academic Term
                     </span>
                     <span class="flex items-center gap-1.5 bg-emerald-500/20 text-emerald-300 px-3 py-1 rounded-xl border border-emerald-500/30 font-bold">
                         <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
@@ -382,7 +385,7 @@
             </div>
 
             <!-- AI Recommendation Banner -->
-            <div class="bg-gradient-to-r from-purple-900 to-indigo-900 text-white rounded-xl p-4 shadow-xs">
+            <div class="bg-purple-900 bg-linear-to-r from-purple-900 to-indigo-900 text-white rounded-xl p-4 shadow-xs" style="background: linear-gradient(to right, #581c87, #312e81);">
                 <div class="flex items-center gap-2 text-xs font-bold text-purple-300 uppercase mb-1">
                     <i class="fas fa-lightbulb text-amber-300"></i> AI Academic Recommendation
                 </div>

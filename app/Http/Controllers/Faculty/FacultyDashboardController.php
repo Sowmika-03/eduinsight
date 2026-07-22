@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Faculty;
 
+use App\Http\Controllers\Controller;
 use App\Models\Course;
 use App\Models\Mark;
 use App\Models\Attendance;

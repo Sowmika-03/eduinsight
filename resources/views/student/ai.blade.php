@@ -11,7 +11,7 @@
 }" class="space-y-6">
 
     <!-- TOP GREETING BANNER -->
-    <div class="bg-gradient-to-r from-purple-950 via-slate-900 to-indigo-950 rounded-3xl p-6 sm:p-8 text-white shadow-xl relative overflow-hidden border border-purple-900/50">
+    <div class="bg-purple-950 bg-linear-to-r from-purple-950 via-slate-900 to-indigo-950 rounded-3xl p-6 sm:p-8 text-white shadow-xl relative overflow-hidden border border-purple-900/50" style="background: linear-gradient(to right, #3b0764, #0f172a, #1e1b4b);">
         <div class="absolute -right-10 -bottom-10 w-80 h-80 bg-purple-600/10 rounded-full blur-3xl pointer-events-none"></div>
         <div class="absolute right-40 -top-10 w-60 h-60 bg-blue-600/10 rounded-full blur-2xl pointer-events-none"></div>
 
@@ -93,7 +93,7 @@
         <form action="{{ route('student.ai.query') }}" method="POST" class="space-y-4">
             @csrf
             <div>
-                <label for="natural_language_query" class="block text-xs font-extrabold uppercase tracking-wider text-slate-800 mb-2 flex items-center gap-2">
+                <label for="natural_language_query" class="text-xs font-extrabold uppercase tracking-wider text-slate-800 mb-2 flex items-center gap-2">
                     <i class="fas fa-comment-dots text-purple-600"></i> Enter Academic Question / Prediction Query:
                 </label>
                 <div class="relative">
@@ -152,7 +152,7 @@
                     <h3 class="text-xs font-extrabold uppercase tracking-wider text-slate-800 mb-3 flex items-center gap-2">
                         <i class="fas fa-chart-bar text-purple-600"></i> Dynamic Data Visualization
                     </h3>
-                    <div class="h-64">
+                    <div class="h-64 relative">
                         <canvas id="studentAiResultChart"></canvas>
                     </div>
                 </div>

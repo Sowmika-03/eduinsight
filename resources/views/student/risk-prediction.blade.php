@@ -73,7 +73,7 @@
     <!-- AI EXPLANATION & ACTION ADVISORY -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <!-- AI Explanation Card -->
-        <div class="lg:col-span-2 bg-gradient-to-r from-slate-900 via-amber-950 to-slate-900 text-white rounded-2xl p-6 shadow-xs flex flex-col justify-between border border-amber-900">
+        <div class="lg:col-span-2 bg-slate-900 bg-linear-to-r from-slate-900 via-amber-950 to-slate-900 text-white rounded-2xl p-6 shadow-xs flex flex-col justify-between border border-amber-900" style="background: linear-gradient(to right, #0f172a, #451a03, #0f172a);">
             <div>
                 <div class="flex items-center justify-between text-xs font-extrabold uppercase tracking-wider text-amber-300 mb-2">
                     <span>EduInsight AI Risk Advisory</span>
@@ -101,15 +101,15 @@
                 <h4 class="text-xs font-extrabold uppercase tracking-wider text-slate-800 mb-3 pb-2 border-b border-slate-100 flex items-center gap-2">
                     <i class="fas fa-user-tie text-blue-600"></i> Assigned Faculty Advisor
                 </h4>
-                <div class="text-sm font-extrabold text-slate-900">Dr. K. Srimannarayana</div>
+                <div class="text-sm font-extrabold text-slate-900">Dr. Bala Murali Krishna</div>
                 <div class="text-xs text-slate-500 mt-0.5">Professor & Senior Academic Counselor</div>
                 <p class="text-xs text-slate-600 font-medium mt-3 leading-relaxed">
-                    "Maintain current momentum. Feel free to drop by during office hours for guidance on Data Structures tutorial exercises."
+                    "Maintain current momentum. Feel free to drop by during office hours for guidance on your academic path."
                 </p>
             </div>
 
             <div class="mt-4 pt-3 border-t border-slate-100 text-center">
-                <a href="mailto:advisor@edu.in" class="px-3.5 py-1.5 rounded-xl bg-blue-50 text-blue-700 hover:bg-blue-100 font-bold text-xs transition inline-flex items-center gap-1.5">
+                <a href="mailto:drbalamuralikrishna@gmail.com" class="px-3.5 py-1.5 rounded-xl bg-blue-50 text-blue-700 hover:bg-blue-100 font-bold text-xs transition inline-flex items-center gap-1.5">
                     <i class="fas fa-envelope text-xs"></i> Contact Advisor
                 </a>
             </div>

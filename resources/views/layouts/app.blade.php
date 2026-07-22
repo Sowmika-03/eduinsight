@@ -115,7 +115,7 @@
             </button>
             
             <a href="/" class="flex items-center gap-2.5 group">
-                <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-700 to-blue-500 flex items-center justify-center text-white shadow-sm group-hover:scale-105 transition">
+                <div class="w-9 h-9 rounded-xl bg-blue-600 bg-linear-to-tr from-blue-700 to-blue-500 flex items-center justify-center text-white shadow-sm group-hover:scale-105 transition" style="background: linear-gradient(to top right, #1d4ed8, #3b82f6);">
                     <i class="fas fa-graduation-cap text-lg"></i>
                 </div>
                 <div class="flex flex-col">
@@ -127,25 +127,48 @@
             <!-- Role & Department Badges -->
             <div class="hidden sm:flex items-center gap-2 ml-3 pl-3 border-l border-slate-200">
                 <span class="px-2.5 py-1 text-xs font-bold rounded-lg bg-blue-50 text-blue-700 border border-blue-100 uppercase tracking-wider">
-                    {{ strtoupper(Auth::user()->role->slug) }} PORTAL
+                    {{ strtoupper(Auth::user()->role->name ?? Auth::user()->role->slug) }} PORTAL
                 </span>
-                <span class="px-2.5 py-1 text-xs font-bold rounded-lg bg-purple-50 text-purple-700 border border-purple-100 uppercase tracking-wider">
-                    {{ Auth::user()->faculty->department ?? Auth::user()->hod->department ?? Auth::user()->student->program ?? 'B.TECH CSE' }}
-                </span>
-                <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-slate-100 text-slate-600 border border-slate-200">
-                    SEM 4 &bull; 2026
-                </span>
+                
+                @if(Auth::user()->role->slug === 'student' && Auth::user()->student)
+                    @if(Auth::user()->student->program)
+                        <span class="px-2.5 py-1 text-xs font-bold rounded-lg bg-purple-50 text-purple-700 border border-purple-100 uppercase tracking-wider">
+                            {{ Auth::user()->student->program }}
+                        </span>
+                    @endif
+                    <span class="px-2.5 py-1 text-xs font-bold rounded-lg bg-slate-50 text-slate-600 border border-slate-200 uppercase tracking-wider">
+                        SEM {{ Auth::user()->student->semester }} &bull; {{ date('Y') }}
+                    </span>
+                @elseif(Auth::user()->role->slug === 'faculty' && Auth::user()->faculty)
+                    @if(Auth::user()->faculty->department)
+                        <span class="px-2.5 py-1 text-xs font-bold rounded-lg bg-purple-50 text-purple-700 border border-purple-100 uppercase tracking-wider">
+                            {{ Auth::user()->faculty->department }}
+                        </span>
+                    @endif
+                @elseif(Auth::user()->role->slug === 'hod' && Auth::user()->hod)
+                    @if(Auth::user()->hod->department)
+                        <span class="px-2.5 py-1 text-xs font-bold rounded-lg bg-purple-50 text-purple-700 border border-purple-100 uppercase tracking-wider">
+                            {{ Auth::user()->hod->department }}
+                        </span>
+                    @endif
+                @elseif(Auth::user()->role->slug === 'parent')
+                    @php
+                        $child = \App\Models\Student::where('parent_id', Auth::id())->first();
+                    @endphp
+                    @if($child)
+                        @if($child->program)
+                            <span class="px-2.5 py-1 text-xs font-bold rounded-lg bg-purple-50 text-purple-700 border border-purple-100 uppercase tracking-wider">
+                                {{ $child->program }}
+                            </span>
+                        @endif
+                        <span class="px-2.5 py-1 text-xs font-bold rounded-lg bg-slate-50 text-slate-600 border border-slate-200 uppercase tracking-wider">
+                            SEM {{ $child->semester }} &bull; {{ date('Y') }}
+                        </span>
+                    @endif
+                @endif
             </div>
         </div>
-        
-        <!-- Center Section: Breadcrumb -->
-        <div class="hidden md:flex items-center text-xs text-slate-500 gap-2 font-medium">
-            <i class="fas fa-home text-slate-400 text-xs"></i>
-            <span>/</span>
-            <span class="capitalize text-slate-600 font-semibold">{{ Auth::user()->role->slug }}</span>
-            <span>/</span>
-            <span class="font-extrabold text-slate-900">@yield('title', 'Dashboard')</span>
-        </div>
+
         
         <!-- Right Section: Global Search, Notifications & Profile -->
         <div class="flex items-center gap-3">

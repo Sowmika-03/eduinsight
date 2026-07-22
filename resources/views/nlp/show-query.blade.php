@@ -39,12 +39,12 @@
 @endphp
 
 <!-- Main Container with Left History Sidebar -->
-<div class="grid grid-cols-1 lg:grid-cols-4 gap-6 min-h-[calc(100vh-140px)]">
+<div class="grid grid-cols-1 lg:grid-cols-4 gap-6 lg:h-[calc(100vh-9rem)]">
     
     <!-- LEFT SIDEBAR: Grouped History -->
-    <div class="lg:col-span-1 space-y-4">
-        <div class="bg-white border border-slate-200/80 rounded-2xl p-4 shadow-xs">
-            <div class="flex items-center justify-between border-b border-slate-100 pb-3 mb-3">
+    <div class="lg:col-span-1 h-full flex flex-col min-h-0">
+        <div class="bg-white border border-slate-200/80 rounded-2xl p-4 shadow-xs h-full flex flex-col overflow-hidden">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3 mb-3 shrink-0">
                 <div class="flex items-center gap-2">
                     <i class="fas fa-history text-blue-600 text-xs"></i>
                     <h3 class="text-xs font-bold uppercase tracking-wider text-slate-800">Query History</h3>
@@ -54,7 +54,7 @@
                 </a>
             </div>
 
-            <div class="space-y-3 max-h-[520px] overflow-y-auto pr-1">
+            <div class="flex-1 overflow-y-auto pr-1 space-y-3">
                 
                 <!-- TODAY GROUP -->
                 @if($todayQueries->isNotEmpty())
@@ -139,10 +139,10 @@
     </div>
 
     <!-- MAIN CHAT & RESPONSE AREA -->
-    <div class="lg:col-span-3 space-y-6">
+    <div class="lg:col-span-3 h-full flex flex-col min-h-0">
         
         <!-- Header Section -->
-        <div class="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div class="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 shrink-0 mb-4">
             <div>
                 <h1 class="text-2xl font-extrabold text-slate-900 tracking-tight">
                     EduInsight AI
@@ -173,7 +173,7 @@
         </div>
 
         <!-- CONVERSATION SPEECH BUBBLES -->
-        <div class="space-y-5">
+        <div class="flex-1 overflow-y-auto space-y-5 pr-2 pb-6">
             
             <!-- User Speech Bubble -->
             <div class="flex items-start justify-end gap-3">
@@ -197,7 +197,7 @@
                     <i class="fas fa-brain"></i>
                 </div>
 
-                <div class="flex-1 bg-white border border-slate-200/90 rounded-2xl rounded-tl-none p-6 shadow-xs space-y-6">
+                <div class="flex-1 min-w-0 bg-white border border-slate-200/90 rounded-2xl rounded-tl-none p-6 shadow-xs space-y-6">
                     
                     <div class="flex items-center justify-between border-b border-slate-100 pb-3">
                         <span class="text-xs font-bold text-slate-900 uppercase tracking-wider">EduInsight AI</span>
@@ -266,7 +266,7 @@
                                 <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">
                                     Visual Analytics
                                 </h4>
-                                <div class="bg-slate-50 border border-slate-200 rounded-xl p-5 w-full h-80">
+                                <div class="bg-slate-50 border border-slate-200 rounded-xl p-5 w-full h-80 relative">
                                     <canvas id="resultChart"></canvas>
                                 </div>
                             </div>
@@ -279,12 +279,12 @@
                             </h4>
 
                             @if(!empty($results))
-                                <div class="table-responsive bg-white border border-slate-200 rounded-xl overflow-hidden shadow-2xs max-h-[450px]">
-                                    <table class="table mb-0">
+                                <div class="overflow-x-auto w-full bg-white border border-slate-200 rounded-xl shadow-2xs max-h-112.5">
+                                    <table class="w-full min-w-full divide-y divide-slate-200">
                                         <thead class="bg-slate-50 border-b border-slate-200">
                                             <tr>
                                                 @foreach ($columns as $column)
-                                                    <th class="text-xs font-bold text-slate-700 py-3">{{ ucwords(str_replace('_', ' ', $column)) }}</th>
+                                                    <th class="px-4 py-3 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">{{ ucwords(str_replace('_', ' ', $column)) }}</th>
                                                 @endforeach
                                             </tr>
                                         </thead>
@@ -292,7 +292,7 @@
                                             @foreach ($results as $row)
                                                 <tr class="hover:bg-slate-50/80 transition">
                                                     @foreach ($columns as $column)
-                                                        <td class="text-xs text-slate-800 font-medium py-2.5">
+                                                        <td class="px-4 py-3 text-xs text-slate-800 font-medium whitespace-nowrap">
                                                             @php
                                                                 $val = $row[$column] ?? '-';
                                                                 if (str_contains(strtolower($column), 'percent') || str_contains(strtolower($column), 'percentage')) {

@@ -243,4 +243,6 @@ def generate_recommendations(data, risk_level):
 
 if __name__ == '__main__':
     load_model()
-    app.run(debug=True, port=5000, host='0.0.0.0')
+    port = int(os.environ.get('PORT', 5005))
+    app.run(debug=True, port=port, host='0.0.0.0')
+

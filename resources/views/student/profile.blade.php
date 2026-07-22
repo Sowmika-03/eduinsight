@@ -8,7 +8,7 @@
     <!-- Header & Action Bar -->
     <div class="bg-white border border-slate-200/90 rounded-2xl p-5 sm:p-6 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div class="flex items-center gap-4">
-            <div class="w-16 h-16 rounded-2xl bg-gradient-to-tr from-blue-700 to-blue-500 text-white flex items-center justify-center font-black text-2xl shadow-md shrink-0">
+            <div class="w-16 h-16 rounded-2xl bg-linear-to-tr from-blue-700 to-blue-500 text-white flex items-center justify-center font-black text-2xl shadow-md shrink-0" style="background: linear-gradient(to top right, #1d4ed8, #3b82f6);">
                 {{ strtoupper(substr(Auth::user()->name, 0, 2)) }}
             </div>
             <div>
@@ -54,15 +54,15 @@
                 </div>
                 <div class="flex justify-between py-1.5 border-b border-slate-50">
                     <span class="text-slate-400 font-semibold">Cumulative CGPA:</span>
-                    <span class="font-black text-emerald-600">3.82 / 4.0</span>
+                    <span class="font-black text-emerald-600">{{ number_format($cgpa, 2) }} / 4.0</span>
                 </div>
                 <div class="flex justify-between py-1.5 border-b border-slate-50">
                     <span class="text-slate-400 font-semibold">Overall Attendance:</span>
-                    <span class="font-black text-blue-600">86.4%</span>
+                    <span class="font-black text-blue-600">{{ $attendancePercent }}%</span>
                 </div>
                 <div class="flex justify-between py-1.5 border-b border-slate-50">
                     <span class="text-slate-400 font-semibold">Faculty Advisor:</span>
-                    <span class="font-bold text-slate-900">Dr. K. Srimannarayana</span>
+                    <span class="font-bold text-slate-900">Dr. Bala Murali Krishna</span>
                 </div>
                 <div class="flex justify-between py-1.5">
                     <span class="text-slate-400 font-semibold">Parent Contact Email:</span>

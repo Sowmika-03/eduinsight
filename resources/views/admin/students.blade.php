@@ -58,7 +58,7 @@
 
             <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:flex lg:flex-wrap items-end gap-3">
                 <!-- Search Student -->
-                <div class="flex-1 min-w-[200px]">
+                <div class="flex-1 min-w-50">
                     <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Search Student</label>
                     <div class="relative">
                         <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
@@ -67,7 +67,7 @@
                 </div>
 
                 <!-- Program Dropdown -->
-                <div class="w-full sm:w-auto min-w-[130px]">
+                <div class="w-full sm:w-auto min-w-32.5">
                     <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Program</label>
                     <select name="program" x-model="selectedProgram" @change="if(selectedProgram !== 'B.Tech') { selectedBranch = ''; }; $el.form.submit()" class="w-full text-xs py-1.5 px-3 bg-slate-50 border border-slate-200 rounded-lg text-slate-700 focus:bg-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition">
                         <option value="">All Programs</option>
@@ -78,9 +78,9 @@
                 </div>
 
                 <!-- Branch Dropdown (Visible ONLY for B.Tech) -->
-                <div x-show="selectedProgram === 'B.Tech'" x-cloak class="w-full sm:w-auto min-w-[120px]">
+                <div x-show="selectedProgram === 'B.Tech'" x-cloak class="w-full sm:w-auto min-w-30">
                     <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Branch</label>
-                    <select name="branch" x-model="selectedBranch" @change="$el.form.submit()" class="w-full text-xs py-1.5 px-3 bg-slate-50 border border-slate-200 rounded-lg text-slate-700 focus:bg-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition">
+                    <select name="branch" x-model="selectedBranch" :disabled="selectedProgram !== 'B.Tech'" @change="$el.form.submit()" class="w-full text-xs py-1.5 px-3 bg-slate-50 border border-slate-200 rounded-lg text-slate-700 focus:bg-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition">
                         <option value="">All Branches</option>
                         <option value="CSE" {{ request('branch') === 'CSE' ? 'selected' : '' }}>CSE</option>
                         <option value="IT" {{ request('branch') === 'IT' ? 'selected' : '' }}>IT</option>
@@ -88,7 +88,7 @@
                 </div>
 
                 <!-- Semester Dropdown -->
-                <div class="w-full sm:w-auto min-w-[120px]">
+                <div class="w-full sm:w-auto min-w-30">
                     <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Semester</label>
                     <select name="semester" onchange="this.form.submit()" class="w-full text-xs py-1.5 px-3 bg-slate-50 border border-slate-200 rounded-lg text-slate-700 focus:bg-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition">
                         <option value="">All Semesters</option>
@@ -99,7 +99,7 @@
                 </div>
 
                 <!-- Risk Dropdown -->
-                <div class="w-full sm:w-auto min-w-[120px]">
+                <div class="w-full sm:w-auto min-w-30">
                     <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Risk Status</label>
                     <select name="risk" onchange="this.form.submit()" class="w-full text-xs py-1.5 px-3 bg-slate-50 border border-slate-200 rounded-lg text-slate-700 focus:bg-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition">
                         <option value="">All Risk Levels</option>
@@ -110,7 +110,7 @@
                 </div>
 
                 <!-- Attendance Dropdown -->
-                <div class="w-full sm:w-auto min-w-[130px]">
+                <div class="w-full sm:w-auto min-w-32.5">
                     <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Attendance</label>
                     <select name="attendance" onchange="this.form.submit()" class="w-full text-xs py-1.5 px-3 bg-slate-50 border border-slate-200 rounded-lg text-slate-700 focus:bg-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition">
                         <option value="">All Attendance</option>
@@ -147,9 +147,9 @@
                         @forelse($students as $student)
                             @php
                                 $maxRisk = $student->academicRisks->max('risk_level');
-                                // Attendance calculation safely
-                                $attAvg = method_exists($student, 'attendance') && $student->attendance->count() > 0 
-                                    ? round($student->attendance->avg('attendance_percentage'), 1) 
+                                $attTotalCount = method_exists($student, 'attendance') ? $student->attendance->count() : 0;
+                                $attAvg = $attTotalCount > 0 
+                                    ? round(($student->attendance->where('status', 'present')->count() / $attTotalCount) * 100, 1) 
                                     : rand(65, 95);
                                 
                                 // Performance score safely
@@ -161,7 +161,7 @@
                                 <!-- Student (Avatar & Name) -->
                                 <td class="py-3 px-3">
                                     <div class="flex items-center gap-3">
-                                        <div class="w-9 h-9 rounded-full bg-gradient-to-tr from-slate-900 to-blue-900 text-white flex items-center justify-center font-bold text-xs shadow-2xs shrink-0 ring-2 ring-blue-500/20">
+                                        <div class="w-9 h-9 rounded-full bg-linear-to-tr from-slate-900 to-blue-900 text-white flex items-center justify-center font-bold text-xs shadow-2xs shrink-0 ring-2 ring-blue-500/20">
                                             {{ strtoupper(substr($student->user->name, 0, 2)) }}
                                         </div>
                                         <div>
@@ -178,7 +178,7 @@
                                 </td>
 
                                 <!-- Attendance % -->
-                                <td class="py-3 px-3 min-w-[120px]">
+                                <td class="py-3 px-3 min-w-30">
                                     <div class="flex items-center justify-between text-xs font-bold mb-1">
                                         <span class="{{ $attAvg < 75 ? 'text-red-600' : 'text-emerald-600' }}">{{ $attAvg }}%</span>
                                     </div>
@@ -331,7 +331,7 @@
             </div>
 
             <!-- AI Summary Card -->
-            <div class="bg-gradient-to-br from-slate-900 to-purple-950 text-white border border-purple-900 rounded-2xl p-5 sm:p-6 shadow-sm flex flex-col justify-between">
+            <div class="bg-linear-to-br from-slate-900 to-purple-950 text-white border border-purple-900 rounded-2xl p-5 sm:p-6 shadow-sm flex flex-col justify-between">
                 <div>
                     <div class="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-purple-300 mb-2">
                         <i class="fas fa-robot text-purple-400"></i>

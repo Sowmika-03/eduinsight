@@ -6,7 +6,7 @@
 <div class="space-y-6">
 
     <!-- TOP GREETING BANNER -->
-    <div class="bg-gradient-to-r from-slate-900 via-blue-950 to-slate-900 rounded-3xl p-6 sm:p-8 text-white shadow-xl relative overflow-hidden border border-blue-900/50">
+    <div class="bg-slate-900 bg-linear-to-r from-slate-900 via-blue-950 to-slate-900 rounded-3xl p-6 sm:p-8 text-white shadow-xl relative overflow-hidden border border-blue-900/50" style="background: linear-gradient(to right, #0f172a, #0b1329, #0f172a);">
         <div class="absolute -right-10 -bottom-10 w-80 h-80 bg-blue-600/10 rounded-full blur-3xl pointer-events-none"></div>
         <div class="absolute right-40 -top-10 w-60 h-60 bg-purple-600/10 rounded-full blur-2xl pointer-events-none"></div>
 
@@ -36,11 +36,28 @@
                         <i class="fas fa-building text-purple-400"></i> {{ $student->program ?? 'B.Tech CSE' }}
                     </span>
                     <span class="flex items-center gap-1.5 bg-slate-800/80 px-3 py-1 rounded-xl border border-slate-700">
-                        <i class="fas fa-user-tie text-amber-400"></i> Advisor: Dr. K. Srimannarayana
+                        <i class="fas fa-user-tie text-amber-400"></i> Advisor: Dr. Bala Murali Krishna
                     </span>
-                    <span class="flex items-center gap-1.5 bg-emerald-500/20 text-emerald-300 px-3 py-1 rounded-xl border border-emerald-500/30 font-bold">
-                        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
-                        Academic Status: Good Standing
+                    @php
+                        $status = $overallPerformance['status'] ?? 'Good Standing';
+                        $statusClass = match($status) {
+                            'Excellent' => 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30',
+                            'Good Standing' => 'bg-blue-500/20 text-blue-300 border-blue-500/30',
+                            'Satisfactory' => 'bg-amber-500/20 text-amber-300 border-amber-500/30',
+                            'Needs Improvement' => 'bg-red-500/20 text-red-300 border-red-500/30',
+                            default => 'bg-blue-500/20 text-blue-300 border-blue-500/30',
+                        };
+                        $pingClass = match($status) {
+                            'Excellent' => 'bg-emerald-400',
+                            'Good Standing' => 'bg-blue-400',
+                            'Satisfactory' => 'bg-amber-400',
+                            'Needs Improvement' => 'bg-red-400',
+                            default => 'bg-blue-400',
+                        };
+                    @endphp
+                    <span class="flex items-center gap-1.5 px-3 py-1 rounded-xl border font-bold {{ $statusClass }}">
+                        <span class="w-2 h-2 rounded-full animate-ping {{ $pingClass }}"></span>
+                        Academic Status: {{ $status }}
                     </span>
                 </div>
             </div>
@@ -307,7 +324,7 @@
         </div>
 
         <!-- AI Recommendations Card -->
-        <div class="bg-gradient-to-br from-purple-950 to-slate-900 text-white rounded-2xl p-5 shadow-xs flex flex-col justify-between border border-purple-900">
+        <div class="bg-purple-950 bg-linear-to-br from-purple-950 to-slate-900 text-white rounded-2xl p-5 shadow-xs flex flex-col justify-between border border-purple-900" style="background: linear-gradient(to bottom right, #3b0764, #0f172a);">
             <div>
                 <div class="flex items-center justify-between text-xs font-bold uppercase tracking-wider text-purple-300 mb-2">
                     <span>EduInsight AI Personal Recommendations</span>

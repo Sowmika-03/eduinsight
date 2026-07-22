@@ -8,7 +8,7 @@
     <!-- Header & Action Bar -->
     <div class="bg-white border border-slate-200/90 rounded-2xl p-5 sm:p-6 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div class="flex items-center gap-4">
-            <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-blue-700 to-blue-500 text-white flex items-center justify-center font-black text-xl shadow-md shrink-0">
+            <div class="w-14 h-14 rounded-2xl bg-blue-600 bg-linear-to-tr from-blue-700 to-blue-500 text-white flex items-center justify-center font-black text-xl shadow-md shrink-0" style="background: linear-gradient(to top right, #1d4ed8, #3b82f6);">
                 {{ strtoupper(substr($student->user->name, 0, 2)) }}
             </div>
             <div>

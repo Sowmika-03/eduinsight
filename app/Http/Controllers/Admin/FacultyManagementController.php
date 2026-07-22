@@ -193,8 +193,10 @@ class FacultyManagementController extends Controller
                 $highRiskCount = 0;
 
                 if ($studentIds->isNotEmpty()) {
-                    $avgAttendance = Attendance::whereIn('student_id', $studentIds)
-                        ->avg('attendance_percentage') ?? 82.5;
+                    $avgAttVal = Attendance::whereIn('student_id', $studentIds)
+                        ->selectRaw("AVG(CASE WHEN status = 'present' THEN 100.0 ELSE 0.0 END) as average")
+                        ->value('average');
+                    $avgAttendance = $avgAttVal !== null ? round($avgAttVal, 1) : 82.5;
 
                     $avgMarks = Mark::whereIn('student_id', $studentIds)
                         ->avg('total_marks') ?? 72.0;
