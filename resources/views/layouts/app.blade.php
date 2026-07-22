@@ -107,8 +107,8 @@
             background-color: #f8fafc !important;
         }
 
-        /* Dark Theme Global Overrides */
-        html.dark body {
+        /* Complete Dark Theme Global Overrides */
+        html.dark, html.dark body, html.dark main {
             background-color: #0b0f19 !important;
             color: #f1f5f9 !important;
         }
@@ -116,12 +116,45 @@
             background-color: #111827 !important;
             border-color: #1f293d !important;
         }
-        html.dark .table-responsive {
+        html.dark .bg-white, html.dark .bg-slate-50 {
             background-color: #151d30 !important;
             border-color: #243049 !important;
+            color: #f1f5f9 !important;
+        }
+        html.dark .bg-slate-100, html.dark .bg-slate-200\/50, html.dark .bg-slate-50\/50 {
+            background-color: #1e293b !important;
+            border-color: #334155 !important;
+            color: #f1f5f9 !important;
+        }
+        html.dark .bg-slate-200, html.dark .bg-slate-300 {
+            background-color: #27354f !important;
+            border-color: #3b4d6e !important;
+            color: #ffffff !important;
+        }
+        html.dark .text-slate-900, html.dark .text-slate-800, html.dark .text-slate-700, html.dark .text-slate-600 {
+            color: #f8fafc !important;
+        }
+        html.dark .text-slate-500, html.dark .text-slate-400 {
+            color: #cbd5e1 !important;
+        }
+        html.dark .border-slate-200, html.dark .border-slate-100, html.dark .border-slate-300, html.dark .border-slate-200\/60, html.dark .border-slate-200\/90 {
+            border-color: #243049 !important;
+        }
+        html.dark input, html.dark select, html.dark textarea, html.dark .form-control {
+            background-color: #0f172a !important;
+            color: #f8fafc !important;
+            border-color: #334155 !important;
+        }
+        html.dark input::placeholder, html.dark textarea::placeholder {
+            color: #64748b !important;
+        }
+        html.dark .table-responsive, html.dark .edu-card, html.dark .stat-box, html.dark .dashboard-card {
+            background-color: #151d30 !important;
+            border-color: #243049 !important;
+            color: #f1f5f9 !important;
         }
         html.dark table th, html.dark .table th {
-            background-color: #111827 !important;
+            background-color: #0f172a !important;
             color: #94a3b8 !important;
             border-bottom-color: #243049 !important;
         }
@@ -130,6 +163,13 @@
             border-bottom-color: #1e293b !important;
         }
         html.dark table tbody tr:hover, html.dark .table tbody tr:hover {
+            background-color: #1e293b !important;
+        }
+        html.dark [x-show="open"], html.dark .shadow-xl, html.dark .shadow-2xl {
+            background-color: #151d30 !important;
+            border-color: #243049 !important;
+        }
+        html.dark .hover\:bg-slate-100:hover, html.dark .hover\:bg-slate-50:hover {
             background-color: #1e293b !important;
         }
     </style>
