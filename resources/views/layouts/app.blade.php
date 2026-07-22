@@ -5,6 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Dashboard') - EduInsight Platform</title>
+
+    <!-- Dark Mode Inline Script to Prevent Initial Flash -->
+    <script>
+        if (localStorage.getItem('color-theme') === 'dark' || (!('color-theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    </script>
     
     <!-- Google Fonts: Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -15,6 +24,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
+            darkMode: 'class',
             theme: {
                 extend: {
                     fontFamily: {
@@ -96,11 +106,37 @@
         table tbody tr:hover, .table tbody tr:hover {
             background-color: #f8fafc !important;
         }
+
+        /* Dark Theme Global Overrides */
+        html.dark body {
+            background-color: #0b0f19 !important;
+            color: #f1f5f9 !important;
+        }
+        html.dark header, html.dark aside, html.dark footer {
+            background-color: #111827 !important;
+            border-color: #1f293d !important;
+        }
+        html.dark .table-responsive {
+            background-color: #151d30 !important;
+            border-color: #243049 !important;
+        }
+        html.dark table th, html.dark .table th {
+            background-color: #111827 !important;
+            color: #94a3b8 !important;
+            border-bottom-color: #243049 !important;
+        }
+        html.dark table td, html.dark .table td {
+            color: #e2e8f0 !important;
+            border-bottom-color: #1e293b !important;
+        }
+        html.dark table tbody tr:hover, html.dark .table tbody tr:hover {
+            background-color: #1e293b !important;
+        }
     </style>
     
     @yield('styles')
 </head>
-<body class="h-full bg-slate-50 text-slate-900 font-sans antialiased" x-data="{ sidebarOpen: false, sidebarCollapsed: false }">
+<body class="h-full bg-slate-50 text-slate-900 font-sans antialiased" x-data="{ sidebarOpen: false, sidebarCollapsed: false, darkMode: document.documentElement.classList.contains('dark') }">
 
     @auth
     <!-- ENTERPRISE HEADER -->
@@ -170,13 +206,22 @@
         </div>
 
         
-        <!-- Right Section: Global Search, Notifications & Profile -->
+        <!-- Right Section: Global Search, Theme Toggle, Notifications & Profile -->
         <div class="flex items-center gap-3">
             <!-- Global Search -->
             <div class="hidden lg:flex items-center relative">
                 <i class="fas fa-search absolute left-3 text-slate-400 text-xs"></i>
                 <input type="text" placeholder="Search students, courses, marks..." class="w-64 pl-8 pr-3 py-1.5 text-xs font-medium bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition">
             </div>
+
+            <!-- Dark / Light Theme Toggle Button -->
+            <button @click="darkMode = !darkMode; if(darkMode){ document.documentElement.classList.add('dark'); localStorage.setItem('color-theme', 'dark'); } else { document.documentElement.classList.remove('dark'); localStorage.setItem('color-theme', 'light'); }" 
+                    type="button" 
+                    class="p-2 text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition flex items-center justify-center" 
+                    title="Toggle Light/Dark Theme">
+                <i x-show="!darkMode" class="fas fa-moon text-base text-slate-600"></i>
+                <i x-show="darkMode" class="fas fa-sun text-base text-amber-400" x-cloak></i>
+            </button>
 
             <!-- Notifications Bell -->
             <div class="relative" x-data="{ open: false }">

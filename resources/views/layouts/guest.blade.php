@@ -5,6 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'EduInsight') - AI Academic Intelligence & Early Risk Prediction Platform</title>
+
+    <!-- Dark Mode Inline Script to Prevent Initial Flash -->
+    <script>
+        if (localStorage.getItem('color-theme') === 'dark' || (!('color-theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    </script>
     
     <!-- Google Fonts: Plus Jakarta Sans & Outfit -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -15,6 +24,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
+            darkMode: 'class',
             theme: {
                 extend: {
                     fontFamily: {
@@ -43,12 +53,31 @@
     <!-- Alpine.js -->
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
+    <style>
+        [x-cloak] { display: none !important; }
+        
+        /* Dark Theme Global Overrides for Guest Layout */
+        html.dark body {
+            background-color: #0b0f19 !important;
+            color: #f1f5f9 !important;
+        }
+        html.dark header, html.dark footer {
+            background-color: #111827 !important;
+            border-color: #1f293d !important;
+        }
+        html.dark input, html.dark select, html.dark textarea {
+            background-color: #151d30 !important;
+            color: #f8fafc !important;
+            border-color: #334155 !important;
+        }
+    </style>
+
     @yield('styles')
 </head>
-<body class="min-h-full bg-slate-50 text-slate-900 font-sans antialiased selection:bg-blue-600 selection:text-white flex flex-col">
+<body class="min-h-full bg-slate-50 text-slate-900 font-sans antialiased selection:bg-blue-600 selection:text-white flex flex-col" x-data="{ darkMode: document.documentElement.classList.contains('dark') }">
 
     <!-- Top Navigation Header matching Dashboard Navbar -->
-    <header class="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-slate-200/90 shadow-xs">
+    <header class="sticky top-0 z-50 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-slate-200/90 dark:border-slate-800 shadow-xs">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
             <!-- Brand Logo matching Dashboard -->
             <a href="/" class="flex items-center gap-2.5 group">
@@ -56,24 +85,33 @@
                     <i class="fas fa-graduation-cap text-lg"></i>
                 </div>
                 <div class="flex flex-col">
-                    <span class="font-display font-black text-slate-900 text-lg tracking-tight leading-none">EduInsight</span>
+                    <span class="font-display font-black text-slate-900 dark:text-white text-lg tracking-tight leading-none">EduInsight</span>
                     <span class="text-[10px] font-bold tracking-wider text-slate-400 uppercase leading-tight mt-0.5">Enterprise Platform</span>
                 </div>
             </a>
 
             <!-- Navigation Links -->
-            <nav class="hidden md:flex items-center gap-8 text-xs font-bold text-slate-600">
-                <a href="#about" class="hover:text-blue-600 transition">About Platform</a>
-                <a href="#how-it-works" class="hover:text-blue-600 transition">How It Works</a>
-                <a href="#features" class="hover:text-blue-600 transition">Features</a>
-                <a href="#portals" class="hover:text-blue-600 transition">Role Portals</a>
-                <a href="#demo-accounts" class="hover:text-blue-600 transition text-blue-600 flex items-center gap-1.5 font-bold">
+            <nav class="hidden md:flex items-center gap-8 text-xs font-bold text-slate-600 dark:text-slate-300">
+                <a href="#about" class="hover:text-blue-600 dark:hover:text-blue-400 transition">About Platform</a>
+                <a href="#how-it-works" class="hover:text-blue-600 dark:hover:text-blue-400 transition">How It Works</a>
+                <a href="#features" class="hover:text-blue-600 dark:hover:text-blue-400 transition">Features</a>
+                <a href="#portals" class="hover:text-blue-600 dark:hover:text-blue-400 transition">Role Portals</a>
+                <a href="#demo-accounts" class="hover:text-blue-600 dark:hover:text-blue-400 transition text-blue-600 dark:text-blue-400 flex items-center gap-1.5 font-bold">
                     <i class="fas fa-key text-[10px]"></i> Demo Logins
                 </a>
             </nav>
 
-            <!-- CTA Actions -->
+            <!-- CTA Actions & Theme Toggle -->
             <div class="flex items-center gap-3">
+                <!-- Dark / Light Theme Toggle Button -->
+                <button @click="darkMode = !darkMode; if(darkMode){ document.documentElement.classList.add('dark'); localStorage.setItem('color-theme', 'dark'); } else { document.documentElement.classList.remove('dark'); localStorage.setItem('color-theme', 'light'); }" 
+                        type="button" 
+                        class="p-2 text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition flex items-center justify-center" 
+                        title="Toggle Light/Dark Theme">
+                    <i x-show="!darkMode" class="fas fa-moon text-base text-slate-600"></i>
+                    <i x-show="darkMode" class="fas fa-sun text-base text-amber-400" x-cloak></i>
+                </button>
+
                 <a href="{{ route('login') }}" class="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-sm hover:shadow transition flex items-center gap-2">
                     <i class="fas fa-sign-in-alt"></i> Portal Login
                 </a>

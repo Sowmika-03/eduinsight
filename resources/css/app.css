@@ -232,3 +232,101 @@ body {
     border-color: #2563eb;
     box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
 }
+
+/* ==========================================================================
+   DARK THEME SYSTEM OVERRIDES
+   ========================================================================== */
+html.dark {
+    color-scheme: dark;
+}
+
+html.dark body {
+    background-color: #0b0f19 !important;
+    color: #f1f5f9 !important;
+}
+
+html.dark .bg-slate-50 {
+    background-color: #0b0f19 !important;
+}
+
+html.dark .bg-white {
+    background-color: #151d30 !important;
+    border-color: #243049 !important;
+    color: #f1f5f9 !important;
+}
+
+html.dark .bg-slate-100 {
+    background-color: #1e293b !important;
+    border-color: #334155 !important;
+    color: #f1f5f9 !important;
+}
+
+html.dark .text-slate-900,
+html.dark .text-slate-800,
+html.dark .text-slate-700 {
+    color: #f8fafc !important;
+}
+
+html.dark .text-slate-600,
+html.dark .text-slate-500 {
+    color: #cbd5e1 !important;
+}
+
+html.dark .text-slate-400 {
+    color: #94a3b8 !important;
+}
+
+html.dark .border-slate-200,
+html.dark .border-slate-100 {
+    border-color: #243049 !important;
+}
+
+html.dark header,
+html.dark aside,
+html.dark footer {
+    background-color: #111827 !important;
+    border-color: #1f293d !important;
+}
+
+html.dark .edu-card,
+html.dark .stat-box,
+html.dark .dashboard-card {
+    background-color: #151d30 !important;
+    border-color: #243049 !important;
+    color: #f1f5f9 !important;
+}
+
+html.dark .table-responsive {
+    background-color: #151d30 !important;
+    border-color: #243049 !important;
+}
+
+html.dark table th, html.dark .table th {
+    background-color: #111827 !important;
+    color: #94a3b8 !important;
+    border-bottom-color: #243049 !important;
+}
+
+html.dark table td, html.dark .table td {
+    color: #e2e8f0 !important;
+    border-bottom-color: #1e293b !important;
+}
+
+html.dark table tbody tr:hover, html.dark .table tbody tr:hover {
+    background-color: #1e293b !important;
+}
+
+html.dark input,
+html.dark select,
+html.dark textarea,
+html.dark .form-control {
+    background-color: #151d30 !important;
+    color: #f8fafc !important;
+    border-color: #334155 !important;
+}
+
+html.dark input::placeholder,
+html.dark textarea::placeholder {
+    color: #64748b !important;
+}
+

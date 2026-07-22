@@ -72,47 +72,47 @@
 
             <!-- ONE-CLICK ROLE QUICK SELECTOR TABS -->
             <div class="mb-5 space-y-3">
-                <label class="text-[10px] font-extrabold uppercase tracking-wider text-blue-700 block">⚡ Express Demo Autofill</label>
-                <div class="grid grid-cols-2 gap-1.5 bg-slate-100 p-1 rounded-xl border border-slate-200">
-                    <button type="button" @click="fillCredentials('admin@eduinsight.com', 'password', 'admin')" :class="activeRole === 'admin' ? 'bg-white text-blue-700 shadow-2xs border-slate-200' : 'text-slate-600 hover:text-slate-900'" class="py-1.5 px-2 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1">
+                <label class="text-[10px] font-extrabold uppercase tracking-wider text-blue-700 dark:text-blue-400 block">⚡ Express Demo Autofill</label>
+                <div class="grid grid-cols-2 gap-1.5 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl border border-slate-200 dark:border-slate-700">
+                    <button type="button" @click="fillCredentials('admin@eduinsight.com', 'password', 'admin')" :class="activeRole === 'admin' ? 'bg-white dark:bg-slate-900 text-blue-700 dark:text-blue-400 shadow-2xs border-slate-200' : 'text-slate-600 dark:text-slate-300 hover:text-slate-900'" class="py-1.5 px-2 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1">
                         <i class="fas fa-user-shield text-[10px]"></i> Admin
                     </button>
-                    <button type="button" @click="fillCredentials('drbalamuralikrishna@gmail.com', 'password', 'faculty')" :class="activeRole === 'faculty' ? 'bg-white text-blue-700 shadow-2xs border-slate-200' : 'text-slate-600 hover:text-slate-900'" class="py-1.5 px-2 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1">
+                    <button type="button" @click="fillCredentials('drbalamuralikrishna@gmail.com', 'password', 'faculty')" :class="activeRole === 'faculty' ? 'bg-white dark:bg-slate-900 text-blue-700 dark:text-blue-400 shadow-2xs border-slate-200' : 'text-slate-600 dark:text-slate-300 hover:text-slate-900'" class="py-1.5 px-2 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1">
                         <i class="fas fa-chalkboard-teacher text-[10px]"></i> Faculty
                     </button>
                 </div>
                 
                 <div>
-                    <label class="text-[9px] font-extrabold uppercase tracking-wider text-slate-500 block mb-1">Heads of Department (HOD)</label>
-                    <div class="grid grid-cols-4 gap-1 bg-slate-100 p-1 rounded-xl border border-slate-200">
-                        <button type="button" @click="fillCredentials('csehod@eduinsight.com', 'password', 'csehod')" :class="activeRole === 'csehod' ? 'bg-white text-blue-700 shadow-2xs border-slate-200' : 'text-slate-600 hover:text-slate-900'" class="py-1.5 px-1 rounded-lg text-[10px] font-bold transition flex items-center justify-center gap-1">
+                    <label class="text-[9px] font-extrabold uppercase tracking-wider text-slate-500 dark:text-slate-400 block mb-1">Heads of Department (HOD)</label>
+                    <div class="grid grid-cols-4 gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl border border-slate-200 dark:border-slate-700">
+                        <button type="button" @click="fillCredentials('drrvramana@eduinsight.ac.in', 'password', 'csehod')" :class="activeRole === 'csehod' ? 'bg-white dark:bg-slate-900 text-blue-700 dark:text-blue-400 shadow-2xs border-slate-200' : 'text-slate-600 dark:text-slate-300 hover:text-slate-900'" class="py-1.5 px-1 rounded-lg text-[10px] font-bold transition flex items-center justify-center gap-1">
                             CSE
                         </button>
-                        <button type="button" @click="fillCredentials('ithod@eduinsight.com', 'password', 'ithod')" :class="activeRole === 'ithod' ? 'bg-white text-blue-700 shadow-2xs border-slate-200' : 'text-slate-600 hover:text-slate-900'" class="py-1.5 px-1 rounded-lg text-[10px] font-bold transition flex items-center justify-center gap-1">
-                            IT
+                        <button type="button" @click="fillCredentials('drpvenkateswararao@eduinsight.ac.in', 'password123', 'ithod')" :class="activeRole === 'ithod' ? 'bg-white dark:bg-slate-900 text-blue-700 dark:text-blue-400 shadow-2xs border-slate-200' : 'text-slate-600 dark:text-slate-300 hover:text-slate-900'" class="py-1.5 px-1 rounded-lg text-[10px] font-bold transition flex items-center justify-center gap-1">
+                            ECE
                         </button>
-                        <button type="button" @click="fillCredentials('mcahod@eduinsight.com', 'password', 'mcahod')" :class="activeRole === 'mcahod' ? 'bg-white text-blue-700 shadow-2xs border-slate-200' : 'text-slate-600 hover:text-slate-900'" class="py-1.5 px-1 rounded-lg text-[10px] font-bold transition flex items-center justify-center gap-1">
-                            MCA
+                        <button type="button" @click="fillCredentials('drvsatyanarayana@eduinsight.ac.in', 'password123', 'mcahod')" :class="activeRole === 'mcahod' ? 'bg-white dark:bg-slate-900 text-blue-700 dark:text-blue-400 shadow-2xs border-slate-200' : 'text-slate-600 dark:text-slate-300 hover:text-slate-900'" class="py-1.5 px-1 rounded-lg text-[10px] font-bold transition flex items-center justify-center gap-1">
+                            EEE
                         </button>
-                        <button type="button" @click="fillCredentials('mbahod@eduinsight.com', 'password', 'mbahod')" :class="activeRole === 'mbahod' ? 'bg-white text-blue-700 shadow-2xs border-slate-200' : 'text-slate-600 hover:text-slate-900'" class="py-1.5 px-1 rounded-lg text-[10px] font-bold transition flex items-center justify-center gap-1">
-                            MBA
+                        <button type="button" @click="fillCredentials('drchsubbarao@eduinsight.ac.in', 'password123', 'mbahod')" :class="activeRole === 'mbahod' ? 'bg-white dark:bg-slate-900 text-blue-700 dark:text-blue-400 shadow-2xs border-slate-200' : 'text-slate-600 dark:text-slate-300 hover:text-slate-900'" class="py-1.5 px-1 rounded-lg text-[10px] font-bold transition flex items-center justify-center gap-1">
+                            ME
                         </button>
                     </div>
                 </div>
 
                 <div>
-                    <label class="text-[9px] font-extrabold uppercase tracking-wider text-slate-500 block mb-1">Students (Sowmika)</label>
-                    <div class="grid grid-cols-4 gap-1 bg-slate-100 p-1 rounded-xl border border-slate-200">
-                        <button type="button" @click="fillCredentials('sowmikacse@gmail.com', 'password', 'student-cse')" :class="activeRole === 'student-cse' ? 'bg-white text-blue-700 shadow-2xs border-slate-200' : 'text-slate-600 hover:text-slate-900'" class="py-1.5 px-1 rounded-lg text-[10px] font-bold transition flex items-center justify-center gap-1">
+                    <label class="text-[9px] font-extrabold uppercase tracking-wider text-slate-500 dark:text-slate-400 block mb-1">Students (Sowmika)</label>
+                    <div class="grid grid-cols-4 gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl border border-slate-200 dark:border-slate-700">
+                        <button type="button" @click="fillCredentials('wwwbvndksowmika+24cse001@gmail.com', 'password123', 'student-cse')" :class="activeRole === 'student-cse' ? 'bg-white dark:bg-slate-900 text-blue-700 dark:text-blue-400 shadow-2xs border-slate-200' : 'text-slate-600 dark:text-slate-300 hover:text-slate-900'" class="py-1.5 px-1 rounded-lg text-[10px] font-bold transition flex items-center justify-center gap-1">
                             CSE
                         </button>
-                        <button type="button" @click="fillCredentials('sowmikait@gmail.com', 'password', 'student-it')" :class="activeRole === 'student-it' ? 'bg-white text-blue-700 shadow-2xs border-slate-200' : 'text-slate-600 hover:text-slate-900'" class="py-1.5 px-1 rounded-lg text-[10px] font-bold transition flex items-center justify-center gap-1">
+                        <button type="button" @click="fillCredentials('bvndksowmika03+24it001@gmail.com', 'password123', 'student-it')" :class="activeRole === 'student-it' ? 'bg-white dark:bg-slate-900 text-blue-700 dark:text-blue-400 shadow-2xs border-slate-200' : 'text-slate-600 dark:text-slate-300 hover:text-slate-900'" class="py-1.5 px-1 rounded-lg text-[10px] font-bold transition flex items-center justify-center gap-1">
                             IT
                         </button>
-                        <button type="button" @click="fillCredentials('sowmikamca@gmail.com', 'password', 'student-mca')" :class="activeRole === 'student-mca' ? 'bg-white text-blue-700 shadow-2xs border-slate-200' : 'text-slate-600 hover:text-slate-900'" class="py-1.5 px-1 rounded-lg text-[10px] font-bold transition flex items-center justify-center gap-1">
+                        <button type="button" @click="fillCredentials('wwwbvndksowmika+24mca001@gmail.com', 'password', 'student-mca')" :class="activeRole === 'student-mca' ? 'bg-white dark:bg-slate-900 text-blue-700 dark:text-blue-400 shadow-2xs border-slate-200' : 'text-slate-600 dark:text-slate-300 hover:text-slate-900'" class="py-1.5 px-1 rounded-lg text-[10px] font-bold transition flex items-center justify-center gap-1">
                             MCA
                         </button>
-                        <button type="button" @click="fillCredentials('sowmikamba@gmail.com', 'password', 'student-mba')" :class="activeRole === 'student-mba' ? 'bg-white text-blue-700 shadow-2xs border-slate-200' : 'text-slate-600 hover:text-slate-900'" class="py-1.5 px-1 rounded-lg text-[10px] font-bold transition flex items-center justify-center gap-1">
+                        <button type="button" @click="fillCredentials('bvndksowmika03+24mba001@gmail.com', 'password123', 'student-mba')" :class="activeRole === 'student-mba' ? 'bg-white dark:bg-slate-900 text-blue-700 dark:text-blue-400 shadow-2xs border-slate-200' : 'text-slate-600 dark:text-slate-300 hover:text-slate-900'" class="py-1.5 px-1 rounded-lg text-[10px] font-bold transition flex items-center justify-center gap-1">
                             MBA
                         </button>
                     </div>
