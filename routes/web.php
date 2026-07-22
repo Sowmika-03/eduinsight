@@ -138,6 +138,7 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/history', [EmailController::class, 'showHistory'])->name('history');
             Route::post('/resend/{emailLog}', [EmailController::class, 'resend'])->name('resend');
             Route::get('/stats', [EmailController::class, 'getStats'])->name('stats');
+            Route::get('/gmail-preview', function () { return view('emails.gmail-preview'); })->name('gmail-preview');
         });
     });
 
