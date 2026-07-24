@@ -12,6 +12,7 @@ use App\Models\Enrollment;
 use App\Models\NlQuery;
 use App\Services\NlpQueryParser;
 use App\Services\QueryResultsFormatter;
+use App\Services\RoleAccessControlService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Auth;
@@ -168,6 +169,7 @@ class StudentDashboardController extends Controller
         $results = [];
         $columns = [];
         $chartConfig = null;
+        $roleContext = RoleAccessControlService::getRoleContextForUser($user);
 
         if ($request->has('query_id')) {
             $activeQuery = NlQuery::where('user_id', $user->id)->find($request->query_id);
@@ -179,6 +181,14 @@ class StudentDashboardController extends Controller
                     ? json_decode($activeQuery->result_columns, true) 
                     : [];
 
+                $rawParseResult = $this->nlpParser->parse($activeQuery->natural_language_query);
+                $parseResult = RoleAccessControlService::applyRoleScope($rawParseResult, $user);
+                $roleContext = $parseResult['role_context'] ?? $roleContext;
+
+                $kpis = QueryResultsFormatter::calculateKpis($results);
+                $recommendations = QueryResultsFormatter::generateRecommendations($results, $kpis);
+                $insights = QueryResultsFormatter::generateIntelligentInsights($results, $kpis, $activeQuery ? $activeQuery->natural_language_query : '');
+
                 if (!empty($results) && !empty($columns)) {
                     $chartConfig = QueryResultsFormatter::detectChartType($columns, $results);
                     if ($chartConfig) {
@@ -188,13 +198,34 @@ class StudentDashboardController extends Controller
             }
         }
 
+        $kpis = $kpis ?? QueryResultsFormatter::calculateKpis($results);
+        $recommendations = $recommendations ?? [];
+        $insights = $insights ?? [];
+
+        $totalClasses = $student ? $student->attendance()->count() : 0;
+        $presentClasses = $student ? $student->attendance()->where('status', 'present')->count() : 0;
+        $attendancePercent = $totalClasses > 0 ? round(($presentClasses / $totalClasses) * 100, 1) : 85.0;
+
+        $avgMarks = $student ? round($student->marks()->avg('total_marks') ?? 75.0, 1) : 75.0;
+        $cgpa = round(($avgMarks / 100) * 4.0, 2);
+        $academicRisk = $student ? $student->academicRisks()->latest()->first() : null;
+        $riskLevel = $academicRisk->risk_level ?? 'Low';
+
         return view('student.ai', compact(
             'student',
             'recentQueries',
             'activeQuery',
             'results',
             'columns',
-            'chartConfig'
+            'chartConfig',
+            'roleContext',
+            'kpis',
+            'recommendations',
+            'insights',
+            'attendancePercent',
+            'avgMarks',
+            'cgpa',
+            'riskLevel'
         ));
     }
 
@@ -208,7 +239,6 @@ class StudentDashboardController extends Controller
         ]);
 
         $user = Auth::user();
-        $student = $user->student;
 
         $nlQuery = new NlQuery();
         $nlQuery->user_id = $user->id;
@@ -218,7 +248,8 @@ class StudentDashboardController extends Controller
         try {
             $startTime = microtime(true);
 
-            $parseResult = $this->nlpParser->parse($request->natural_language_query);
+            $rawParseResult = $this->nlpParser->parse($request->natural_language_query);
+            $parseResult = RoleAccessControlService::applyRoleScope($rawParseResult, $user);
 
             $endTime = microtime(true);
             $executionTime = round(($endTime - $startTime) * 1000);
@@ -226,17 +257,10 @@ class StudentDashboardController extends Controller
             if ($parseResult['success']) {
                 $generatedSql = $parseResult['sql'];
 
-                // Enforce RBAC: Scope query execution to current student's ID
-                if (str_contains(strtolower($generatedSql), 'where')) {
-                    $scopedSql = preg_replace('/where/i', "WHERE s.id = {$student->id} AND ", $generatedSql, 1);
-                } else {
-                    $scopedSql = $generatedSql . " WHERE s.id = {$student->id}";
-                }
-
                 try {
-                    $queryResult = DB::select($scopedSql);
-                } catch (\Exception $e) {
                     $queryResult = DB::select($generatedSql);
+                } catch (\Exception $e) {
+                    $queryResult = [];
                 }
 
                 $formattedResults = QueryResultsFormatter::format($queryResult);
@@ -247,7 +271,7 @@ class StudentDashboardController extends Controller
                 $nlQuery->result_columns = json_encode($formattedResults['columns']);
                 $nlQuery->result_count = $formattedResults['count'];
                 $nlQuery->query_status = 'success';
-                $nlQuery->query_intent = $parseResult['intent'] ?? 'analyze';
+                $nlQuery->query_intent = $parseResult['intent'] ?? 'search';
                 $nlQuery->show_sql_to_user = false;
             } else {
                 $nlQuery->query_status = 'error';

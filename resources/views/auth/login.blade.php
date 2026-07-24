@@ -83,19 +83,19 @@
                 </div>
                 
                 <div>
-                    <label class="text-[9px] font-extrabold uppercase tracking-wider text-slate-500 dark:text-slate-400 block mb-1">Heads of Department (HOD)</label>
+                    <label class="text-[9px] font-extrabold uppercase tracking-wider text-slate-500 dark:text-slate-400 block mb-1">HEADS OF DEPARTMENT (HOD) & FACULTY</label>
                     <div class="grid grid-cols-4 gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl border border-slate-200 dark:border-slate-700">
                         <button type="button" @click="fillCredentials('drrvramana@eduinsight.ac.in', 'password', 'csehod')" :class="activeRole === 'csehod' ? 'bg-white dark:bg-slate-900 text-blue-700 dark:text-blue-400 shadow-2xs border-slate-200' : 'text-slate-600 dark:text-slate-300 hover:text-slate-900'" class="py-1.5 px-1 rounded-lg text-[10px] font-bold transition flex items-center justify-center gap-1">
                             CSE
                         </button>
                         <button type="button" @click="fillCredentials('drpvenkateswararao@eduinsight.ac.in', 'password123', 'ithod')" :class="activeRole === 'ithod' ? 'bg-white dark:bg-slate-900 text-blue-700 dark:text-blue-400 shadow-2xs border-slate-200' : 'text-slate-600 dark:text-slate-300 hover:text-slate-900'" class="py-1.5 px-1 rounded-lg text-[10px] font-bold transition flex items-center justify-center gap-1">
-                            ECE
+                            IT
                         </button>
                         <button type="button" @click="fillCredentials('drvsatyanarayana@eduinsight.ac.in', 'password123', 'mcahod')" :class="activeRole === 'mcahod' ? 'bg-white dark:bg-slate-900 text-blue-700 dark:text-blue-400 shadow-2xs border-slate-200' : 'text-slate-600 dark:text-slate-300 hover:text-slate-900'" class="py-1.5 px-1 rounded-lg text-[10px] font-bold transition flex items-center justify-center gap-1">
-                            EEE
+                            MCA
                         </button>
                         <button type="button" @click="fillCredentials('drchsubbarao@eduinsight.ac.in', 'password123', 'mbahod')" :class="activeRole === 'mbahod' ? 'bg-white dark:bg-slate-900 text-blue-700 dark:text-blue-400 shadow-2xs border-slate-200' : 'text-slate-600 dark:text-slate-300 hover:text-slate-900'" class="py-1.5 px-1 rounded-lg text-[10px] font-bold transition flex items-center justify-center gap-1">
-                            ME
+                            MBA
                         </button>
                     </div>
                 </div>

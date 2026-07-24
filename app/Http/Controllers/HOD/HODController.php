@@ -16,6 +16,7 @@ use App\Models\NlQuery;
 use App\Services\EmailAnalyticsService;
 use App\Services\NlpQueryParser;
 use App\Services\QueryResultsFormatter;
+use App\Services\RoleAccessControlService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Auth;
@@ -506,6 +507,7 @@ class HODController extends Controller
         $results = [];
         $columns = [];
         $chartConfig = null;
+        $roleContext = RoleAccessControlService::getRoleContextForUser($user);
 
         if ($request->has('query_id')) {
             $activeQuery = NlQuery::where('user_id', $user->id)->find($request->query_id);
@@ -517,6 +519,14 @@ class HODController extends Controller
                     ? json_decode($activeQuery->result_columns, true) 
                     : [];
 
+                $rawParseResult = $this->nlpParser->parse($activeQuery->natural_language_query);
+                $parseResult = RoleAccessControlService::applyRoleScope($rawParseResult, $user);
+                $roleContext = $parseResult['role_context'] ?? $roleContext;
+
+                $kpis = QueryResultsFormatter::calculateKpis($results);
+                $recommendations = QueryResultsFormatter::generateRecommendations($results, $kpis);
+                $insights = QueryResultsFormatter::generateIntelligentInsights($results, $kpis, $activeQuery ? $activeQuery->natural_language_query : '');
+
                 if (!empty($results) && !empty($columns)) {
                     $chartConfig = QueryResultsFormatter::detectChartType($columns, $results);
                     if ($chartConfig) {
@@ -526,13 +536,21 @@ class HODController extends Controller
             }
         }
 
+        $kpis = $kpis ?? QueryResultsFormatter::calculateKpis($results);
+        $recommendations = $recommendations ?? [];
+        $insights = $insights ?? [];
+
         return view('hod.ai', compact(
             'hod',
             'recentQueries',
             'activeQuery',
             'results',
             'columns',
-            'chartConfig'
+            'chartConfig',
+            'roleContext',
+            'kpis',
+            'recommendations',
+            'insights'
         ));
     }
 
@@ -546,8 +564,6 @@ class HODController extends Controller
         ]);
 
         $user = auth()->user();
-        $hod = $user->hod;
-        $dept = $hod->department;
 
         $nlQuery = new NlQuery();
         $nlQuery->user_id = $user->id;
@@ -557,8 +573,8 @@ class HODController extends Controller
         try {
             $startTime = microtime(true);
 
-            // Use existing NLP Parser service
-            $parseResult = $this->nlpParser->parse($request->natural_language_query);
+            $rawParseResult = $this->nlpParser->parse($request->natural_language_query);
+            $parseResult = RoleAccessControlService::applyRoleScope($rawParseResult, $user);
 
             $endTime = microtime(true);
             $executionTime = round(($endTime - $startTime) * 1000);
@@ -566,22 +582,10 @@ class HODController extends Controller
             if ($parseResult['success']) {
                 $generatedSql = $parseResult['sql'];
 
-                // Enforce RBAC: Restrict SQL results strictly to HOD department
-                // If query targets courses/students/faculty, wrap or check department condition
-                $deptFacultyIds = Faculty::where('department', $dept)->pluck('id')->toArray();
-                $deptFacultyStr = implode(',', $deptFacultyIds ?: [0]);
-
-                if (str_contains(strtolower($generatedSql), 'where')) {
-                    $scopedSql = preg_replace('/where/i', "WHERE c.faculty_id IN ({$deptFacultyStr}) AND ", $generatedSql, 1);
-                } else {
-                    $scopedSql = $generatedSql . " WHERE c.faculty_id IN ({$deptFacultyStr})";
-                }
-
-                // Execute query (fallback to base sql if regex replacement doesn't apply)
                 try {
-                    $queryResult = DB::select($scopedSql);
-                } catch (\Exception $e) {
                     $queryResult = DB::select($generatedSql);
+                } catch (\Exception $e) {
+                    $queryResult = [];
                 }
 
                 $formattedResults = QueryResultsFormatter::format($queryResult);
@@ -592,7 +596,7 @@ class HODController extends Controller
                 $nlQuery->result_columns = json_encode($formattedResults['columns']);
                 $nlQuery->result_count = $formattedResults['count'];
                 $nlQuery->query_status = 'success';
-                $nlQuery->query_intent = $parseResult['intent'] ?? 'analyze';
+                $nlQuery->query_intent = $parseResult['intent'] ?? 'search';
                 $nlQuery->show_sql_to_user = false;
             } else {
                 $nlQuery->query_status = 'error';

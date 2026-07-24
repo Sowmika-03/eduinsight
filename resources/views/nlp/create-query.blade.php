@@ -144,6 +144,9 @@
                 </span>
             </div>
 
+            <!-- 1. AI CONTEXT PANEL -->
+            @include('components.ai.context-card', ['roleContext' => $roleContext ?? \App\Services\RoleAccessControlService::getRoleContextForUser(Auth::user())])
+
             <!-- Intro / Description Box -->
             <div class="mb-8">
                 <p class="text-xs sm:text-sm text-slate-600 font-medium leading-relaxed">

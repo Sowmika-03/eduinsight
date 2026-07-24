@@ -33,13 +33,15 @@
             </div>
 
             <div class="flex items-center gap-3 shrink-0">
-                <div class="px-3.5 py-2 rounded-xl bg-white/10 border border-white/20 text-xs font-bold text-white backdrop-blur-md flex items-center gap-2">
-                    <i class="fas fa-shield-alt text-emerald-400"></i>
-                    <span>RBAC Enforced: {{ strtoupper($userRole) }} Scope</span>
-                </div>
+                <span class="px-3.5 py-2 rounded-xl text-xs font-bold uppercase tracking-wider border {{ $roleContext['scope_badge_class'] ?? 'bg-blue-100 text-blue-800 border-blue-200' }}">
+                    {{ $roleContext['scope_badge_label'] ?? 'Department Scope' }}
+                </span>
             </div>
         </div>
     </div>
+
+    <!-- 1. AI CONTEXT PANEL -->
+    @include('components.ai.context-card', ['roleContext' => $roleContext])
 
     <!-- 2. SUGGESTED QUESTIONS & PINNED QUERIES -->
     <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs space-y-3">
@@ -89,111 +91,48 @@
         </form>
     </div>
 
-    <!-- 4. CONVERSATION PANEL & EXECUTIVE RESPONSE -->
+    <!-- 4. CONVERSATION PANEL & EXECUTIVE RESPONSE (Department Intelligence Assistant) -->
     @if($activeQuery)
     <div class="space-y-6">
-        <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-xs">
-            <div class="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-100 pb-4 mb-5 gap-3">
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-purple-700 to-indigo-600 text-white flex items-center justify-center text-base font-bold shadow-2xs">
-                        <i class="fas fa-robot"></i>
-                    </div>
-                    <div>
-                        <h3 class="text-sm font-extrabold text-slate-900">Query Evaluation Complete</h3>
-                        <div class="flex items-center gap-3 text-xs text-slate-500 font-medium mt-0.5">
-                            <span><i class="fas fa-stopwatch text-amber-500"></i> Latency: <strong>{{ $activeQuery->execution_time ?? 14 }}ms</strong></span>
-                            <span>&bull;</span>
-                            <span><i class="fas fa-shield-alt text-emerald-500"></i> Confidence: <strong>98.5%</strong></span>
-                            <span>&bull;</span>
-                            <span class="text-emerald-600 font-black uppercase">STATUS: {{ $activeQuery->query_status }}</span>
-                        </div>
-                    </div>
+        <div class="bg-white border border-emerald-200 rounded-3xl p-6 sm:p-8 shadow-sm space-y-6">
+            
+            <!-- HOD Department Assistant Header -->
+            <div class="flex items-start gap-3 border-b border-emerald-100 pb-4">
+                <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-700 text-white flex items-center justify-center text-lg font-bold shadow-md shrink-0">
+                    <i class="fas fa-building-columns text-emerald-200"></i>
                 </div>
-
-                <div class="flex items-center gap-2">
-                    <button type="button" onclick="window.print()" class="px-3.5 py-1.5 text-xs font-bold rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition border border-slate-200 flex items-center gap-1">
-                        <i class="fas fa-file-pdf text-red-500"></i> Export PDF
-                    </button>
+                <div class="flex-1 min-w-0">
+                    <div class="flex items-center justify-between">
+                        <span class="text-[11px] font-extrabold uppercase tracking-wider text-emerald-800">Department Intelligence AI &bull; {{ $deptName ?? 'Department' }}</span>
+                        <span class="text-[10px] font-bold text-slate-400 font-mono">⚡ {{ $activeQuery->execution_time ?? 14 }}ms</span>
+                    </div>
+                    <h3 class="text-base sm:text-lg font-black text-slate-900 mt-0.5">
+                        "{{ $activeQuery->natural_language_query }}"
+                    </h3>
                 </div>
             </div>
 
-            <!-- Executive Summary -->
-            <div class="p-4 rounded-xl bg-purple-50 border border-purple-100 mb-5">
-                <h4 class="text-xs font-extrabold uppercase tracking-wider text-purple-900 mb-1 flex items-center gap-1.5">
-                    <i class="fas fa-align-left text-purple-600"></i> Executive Summary
-                </h4>
-                <p class="text-xs text-purple-950 font-medium leading-relaxed">
-                    Evaluated <strong>{{ count($results) }} record(s)</strong> from active database for query: <em>"{{ $activeQuery->natural_language_query }}"</em> under {{ $deptName }} department scope.
-                </p>
-            </div>
-
-            <!-- Reasoning & Recommendations -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                <div class="p-4 rounded-xl bg-slate-50 border border-slate-200">
-                    <h4 class="text-xs font-extrabold uppercase tracking-wider text-slate-800 mb-1 flex items-center gap-1.5">
-                        <i class="fas fa-brain text-purple-600"></i> AI Analytical Reasoning
-                    </h4>
-                    <p class="text-xs text-slate-600 font-medium leading-relaxed">
-                        Query processed using SQL translation. Filtered against live student enrollment records, attendance logs, and internal assessment tables.
-                    </p>
-                </div>
-
-                <div class="p-4 rounded-xl bg-emerald-50 border border-emerald-200">
-                    <h4 class="text-xs font-extrabold uppercase tracking-wider text-emerald-900 mb-1 flex items-center gap-1.5">
-                        <i class="fas fa-lightbulb text-emerald-600"></i> Strategic Recommendations
-                    </h4>
-                    <ul class="text-xs text-emerald-900 space-y-1 font-semibold list-disc list-inside">
-                        <li>Issue warning notices to students below 75% attendance.</li>
-                        <li>Assign course mentors for students with low midterm marks.</li>
-                    </ul>
-                </div>
-            </div>
-
-            <!-- Dynamic Chart -->
-            @if($chartConfig && !empty($chartConfig['data']))
-                <div class="mb-6 bg-slate-50 border border-slate-200 rounded-xl p-5">
-                    <h4 class="text-xs font-extrabold uppercase tracking-wider text-slate-800 mb-3 flex items-center gap-1.5">
-                        <i class="fas fa-chart-bar text-purple-600"></i> Visual Data Chart
-                    </h4>
-                    <div class="h-64 relative">
-                        <canvas id="aiResultChart"></canvas>
-                    </div>
+            @if(!empty($roleContext['is_cross_dept']))
+                <div class="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-xs font-semibold text-emerald-950 flex items-center gap-2">
+                    <i class="fas fa-info-circle text-emerald-600 text-sm"></i>
+                    <span>Notice: Results are evaluated specifically for the {{ $roleContext['department'] ?? 'your' }} department scope.</span>
                 </div>
             @endif
 
-            <!-- Supporting Data Table -->
-            @if(!empty($results) && !empty($columns))
-                <div class="mb-6">
-                    <h4 class="text-xs font-extrabold uppercase tracking-wider text-slate-800 mb-3 flex items-center gap-1.5">
-                        <i class="fas fa-table text-purple-600"></i> Supporting Data Table ({{ count($results) }} Rows)
-                    </h4>
-                    <div class="table-responsive border border-slate-200 rounded-xl overflow-hidden">
-                        <table class="table mb-0 w-full text-left border-collapse">
-                            <thead class="bg-slate-50 border-b border-slate-200 text-[11px] font-extrabold uppercase text-slate-500">
-                                <tr>
-                                    @foreach($columns as $col)
-                                        <th class="py-3 px-4">{{ str_replace('_', ' ', $col) }}</th>
-                                    @endforeach
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-slate-100 text-xs font-medium">
-                                @foreach($results as $row)
-                                    <tr class="hover:bg-slate-50/80 transition">
-                                        @foreach($columns as $col)
-                                            <td class="py-3 px-4 text-slate-800">
-                                                @if(is_numeric($row[$col]))
-                                                    <span class="font-mono font-bold">{{ is_float($row[$col]) ? round($row[$col], 2) : $row[$col] }}</span>
-                                                @else
-                                                    {{ $row[$col] }}
-                                                @endif
-                                            </td>
-                                        @endforeach
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+            @if(count($results) === 0)
+                @include('components.ai.no-records-panel', ['roleContext' => $roleContext])
+            @else
+                <!-- INTELLIGENT RESULT RENDERER -->
+                @include('components.ai.intelligent-result-renderer', [
+                    'nlQuery' => $activeQuery,
+                    'roleContext' => $roleContext,
+                    'results' => $results,
+                    'columns' => $columns,
+                    'chartConfig' => $chartConfig,
+                    'kpis' => $kpis ?? [],
+                    'recommendations' => $recommendations ?? [],
+                    'insights' => $insights ?? []
+                ])
             @endif
 
             <!-- Follow-up Questions -->

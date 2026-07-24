@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'EduInsight AI Response')
+@section('title', 'EduInsight AI Academic Advisor')
 
 @section('content')
 
@@ -12,37 +12,16 @@
     $yesterdayQueries = $allQueries->filter(fn($q) => $q->created_at->isYesterday());
     $olderQueries     = $allQueries->filter(fn($q) => !$q->created_at->isToday() && !$q->created_at->isYesterday());
 
-    $roleName      = ucfirst(Auth::user()->role->name ?? Auth::user()->role->slug);
+    $roleSlug      = strtolower(Auth::user()->role->slug ?? 'student');
+    $roleName      = ucfirst(Auth::user()->role->name ?? $roleSlug);
     $resultCount   = count($results);
-
-    // Context-Aware Follow-Up Generator
-    $userQueryText = strtolower($nlQuery->natural_language_query);
-    if (str_contains($userQueryText, 'attend') || str_contains($userQueryText, 'absent')) {
-        $dynamicFollowups = [
-            ['title' => 'Show High Risk Students', 'query' => 'Show High Risk students'],
-            ['title' => 'Send Warning Emails', 'url' => route('email.send')],
-            ['title' => 'Compare Departments', 'query' => 'Department attendance summary']
-        ];
-    } elseif (str_contains($userQueryText, 'risk') || str_contains($userQueryText, 'fail') || str_contains($userQueryText, 'marks')) {
-        $dynamicFollowups = [
-            ['title' => 'View High Risk Students', 'query' => 'Show High Risk students'],
-            ['title' => 'Send Warning Emails', 'url' => route('email.send')],
-            ['title' => 'Review Low Attendance Students', 'query' => 'Show students below 75% attendance']
-        ];
-    } else {
-        $dynamicFollowups = [
-            ['title' => 'Show High Risk Students', 'query' => 'Show High Risk students'],
-            ['title' => 'Send Warning Emails', 'url' => route('email.send')],
-            ['title' => 'Compare Departments', 'query' => 'Department attendance summary']
-        ];
-    }
 @endphp
 
 <!-- Main Container with Left History Sidebar -->
 <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 lg:h-[calc(100vh-9rem)]">
     
-    <!-- LEFT SIDEBAR: Grouped History -->
-    <div class="lg:col-span-1 h-full flex flex-col min-h-0">
+    <!-- LEFT SIDEBAR: Grouped History & Viva Shortcuts -->
+    <div class="lg:col-span-1 h-full flex flex-col min-h-0 space-y-4">
         <div class="bg-white border border-slate-200/80 rounded-2xl p-4 shadow-xs h-full flex flex-col overflow-hidden">
             <div class="flex items-center justify-between border-b border-slate-100 pb-3 mb-3 shrink-0">
                 <div class="flex items-center gap-2">
@@ -70,11 +49,6 @@
                                     </a>
                                     <div class="flex items-center justify-between mt-1.5 text-[10px] text-slate-400">
                                         <span>{{ $qItem->created_at->format('h:i A') }}</span>
-                                        <div class="flex items-center gap-1.5">
-                                            <button type="button" class="text-slate-300 hover:text-amber-500 transition"><i class="fas fa-star"></i></button>
-                                            <button type="button" class="text-slate-300 hover:text-blue-600 transition"><i class="fas fa-thumbtack"></i></button>
-                                            <button type="button" class="text-slate-300 hover:text-red-600 transition"><i class="fas fa-trash-alt"></i></button>
-                                        </div>
                                     </div>
                                 </div>
                             @endforeach
@@ -94,14 +68,6 @@
                                             {{ $qItem->natural_language_query }}
                                         </p>
                                     </a>
-                                    <div class="flex items-center justify-between mt-1.5 text-[10px] text-slate-400">
-                                        <span>Yesterday</span>
-                                        <div class="flex items-center gap-1.5">
-                                            <button type="button" class="text-slate-300 hover:text-amber-500 transition"><i class="fas fa-star"></i></button>
-                                            <button type="button" class="text-slate-300 hover:text-blue-600 transition"><i class="fas fa-thumbtack"></i></button>
-                                            <button type="button" class="text-slate-300 hover:text-red-600 transition"><i class="fas fa-trash-alt"></i></button>
-                                        </div>
-                                    </div>
                                 </div>
                             @endforeach
                         </div>
@@ -120,14 +86,6 @@
                                             {{ $qItem->natural_language_query }}
                                         </p>
                                     </a>
-                                    <div class="flex items-center justify-between mt-1.5 text-[10px] text-slate-400">
-                                        <span>{{ $qItem->created_at->format('M d, Y') }}</span>
-                                        <div class="flex items-center gap-1.5">
-                                            <button type="button" class="text-slate-300 hover:text-amber-500 transition"><i class="fas fa-star"></i></button>
-                                            <button type="button" class="text-slate-300 hover:text-blue-600 transition"><i class="fas fa-thumbtack"></i></button>
-                                            <button type="button" class="text-slate-300 hover:text-red-600 transition"><i class="fas fa-trash-alt"></i></button>
-                                        </div>
-                                    </div>
                                 </div>
                             @endforeach
                         </div>
@@ -135,35 +93,63 @@
                 @endif
 
             </div>
+
+            <!-- PROFESSOR DEMO / VIVA SHORTCUTS -->
+            <div class="border-t border-slate-100 pt-3 mt-3 shrink-0 space-y-1.5">
+                <span class="text-[10px] font-bold uppercase tracking-wider text-indigo-600 flex items-center gap-1">
+                    <i class="fas fa-graduation-cap"></i> Viva & Demo Questions
+                </span>
+                <div class="grid grid-cols-1 gap-1 text-[11px]">
+                    <a href="{{ route('nlp.create') }}?query=Which department performs best" class="p-1.5 rounded-lg bg-indigo-50/60 hover:bg-indigo-100 text-indigo-900 font-semibold truncate block">
+                        Which department performs best?
+                    </a>
+                    <a href="{{ route('nlp.create') }}?query=Show department rankings" class="p-1.5 rounded-lg bg-indigo-50/60 hover:bg-indigo-100 text-indigo-900 font-semibold truncate block">
+                        Show department rankings
+                    </a>
+                    <a href="{{ route('nlp.create') }}?query=Which branch has lowest attendance" class="p-1.5 rounded-lg bg-indigo-50/60 hover:bg-indigo-100 text-indigo-900 font-semibold truncate block">
+                        Which branch has lowest attendance?
+                    </a>
+                    <a href="{{ route('nlp.create') }}?query=Generate Department Report" class="p-1.5 rounded-lg bg-indigo-50/60 hover:bg-indigo-100 text-indigo-900 font-semibold truncate block">
+                        Generate Department Report
+                    </a>
+                </div>
+            </div>
         </div>
     </div>
 
-    <!-- MAIN CHAT & RESPONSE AREA -->
+    <!-- MAIN CHAT & ADVISOR RESPONSE AREA -->
     <div class="lg:col-span-3 h-full flex flex-col min-h-0">
         
         <!-- Header Section -->
         <div class="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 shrink-0 mb-4">
             <div>
-                <h1 class="text-2xl font-extrabold text-slate-900 tracking-tight">
-                    EduInsight AI
-                </h1>
+                <div class="flex items-center gap-2">
+                    <h1 class="text-2xl font-extrabold text-slate-900 tracking-tight">
+                        EduInsight Academic Advisor
+                    </h1>
+                    <!-- COLORED STATUS BADGE -->
+                    <span class="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider border {{ $roleContext['scope_badge_class'] ?? 'bg-blue-100 text-blue-800 border-blue-200' }}">
+                        {{ $roleContext['scope_badge_label'] ?? ($roleContext['access_level'] ?? $roleName) }}
+                    </span>
+                    @if($resultCount === 0)
+                        <span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-slate-100 text-slate-800 border border-slate-200">
+                            No Matching Records
+                        </span>
+                    @endif
+                </div>
                 <p class="text-xs font-semibold text-slate-500 mt-0.5">
-                    Academic Decision Support Assistant
+                    Role-Aware Academic Decision Support System
                 </p>
             </div>
 
             <!-- Status Badge & Exports -->
             <div class="flex flex-wrap items-center gap-2 shrink-0">
-                <span class="px-3 py-1 text-xs font-bold rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center gap-1.5 mr-1">
-                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                    <span>EduInsight AI Online</span>
-                </span>
                 @if($resultCount > 0)
                     <button onclick="window.print()" class="px-3 py-1.5 text-xs font-bold rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition border border-slate-200 flex items-center gap-1.5">
-                        <i class="fas fa-print"></i> PDF / Print
+                        <i class="fas fa-print"></i> Print Report
                     </button>
                     <button onclick="exportToCSV()" class="px-3 py-1.5 text-xs font-bold rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-700 transition border border-emerald-200 flex items-center gap-1.5">
-                        <i class="fas fa-file-csv"></i> CSV
+                        <i class="fas fa-file-csv"></i> Export CSV
                     </button>
                 @endif
                 <a href="{{ route('nlp.create') }}" class="px-3.5 py-1.5 text-xs font-bold rounded-xl bg-blue-600 hover:bg-blue-700 text-white transition shadow-2xs">
@@ -180,7 +166,7 @@
                 <div class="max-w-xl bg-blue-600 text-white rounded-2xl rounded-tr-none p-4 shadow-2xs">
                     <div class="flex items-center gap-2 text-[11px] font-bold text-blue-200 uppercase tracking-wider mb-1">
                         <i class="fas fa-user"></i>
-                        <span>You</span>
+                        <span>You ({{ $roleName }})</span>
                     </div>
                     <p class="text-xs sm:text-sm font-semibold leading-relaxed">
                         {{ $nlQuery->natural_language_query }}
@@ -199,131 +185,40 @@
 
                 <div class="flex-1 min-w-0 bg-white border border-slate-200/90 rounded-2xl rounded-tl-none p-6 shadow-xs space-y-6">
                     
-                    <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-                        <span class="text-xs font-bold text-slate-900 uppercase tracking-wider">EduInsight AI</span>
-                        <span class="text-[11px] text-slate-400 font-medium">
-                            <i class="fas fa-bolt text-amber-500"></i> {{ $nlQuery->execution_time }}ms &bull; {{ $resultCount }} records
-                        </span>
-                    </div>
+                    <!-- 1. AI CONTEXT PANEL -->
+                    @include('components.ai.context-card', ['roleContext' => $roleContext])
 
-                    @if ($nlQuery->query_status === 'success')
+                    <!-- 2. AI SCOPE NOTICE (Appears before results when query requests data outside scope) -->
+                    @include('components.ai.scope-notice', ['roleContext' => $roleContext])
 
-                        <!-- 1. EXECUTIVE SUMMARY -->
-                        <div>
-                            <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">
-                                Executive Summary
-                            </h4>
-                            <p class="text-xs sm:text-sm text-slate-800 font-medium leading-relaxed bg-blue-50/60 p-4 rounded-xl border border-blue-100">
-                                {{ $resultCount }} student evaluation record(s) currently match your search criteria for <strong>"{{ $nlQuery->natural_language_query }}"</strong>.
-                            </p>
-                        </div>
+                    <!-- 3. QUERY STATUS PANEL -->
+                    @include('components.ai.query-status-panel', ['nlQuery' => $nlQuery, 'roleContext' => $roleContext, 'resultsCount' => $resultCount])
 
-                        <!-- 2. KEY FINDINGS -->
-                        <div>
-                            <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">
-                                Key Findings
-                            </h4>
-                            <div class="space-y-1.5 text-xs sm:text-sm text-slate-700 font-medium bg-slate-50 p-4 rounded-xl border border-slate-200/80">
-                                <p class="flex items-start gap-2">
-                                    <span class="text-emerald-600 font-bold">✓</span>
-                                    <span>Identified {{ $resultCount }} records evaluated in {{ $nlQuery->execution_time }}ms.</span>
-                                </p>
-                                <p class="flex items-start gap-2">
-                                    <span class="text-emerald-600 font-bold">✓</span>
-                                    <span>Evaluated columns: {{ implode(', ', array_map('ucwords', array_map(fn($c) => str_replace('_', ' ', $c), array_slice($columns, 0, 4)))) }}.</span>
-                                </p>
-                                <p class="flex items-start gap-2">
-                                    <span class="text-emerald-600 font-bold">✓</span>
-                                    <span>Database execution completed under {{ $roleName }} institutional scope.</span>
-                                </p>
-                            </div>
-                        </div>
+                    <!-- 4. ROLE INFORMATION PANEL -->
+                    @include('components.ai.role-info-panel', ['roleContext' => $roleContext])
 
-                        <!-- 3. RECOMMENDATIONS -->
-                        <div>
-                            <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">
-                                Recommendations
-                            </h4>
-                            <div class="space-y-1.5 text-xs sm:text-sm text-slate-700 font-medium bg-amber-50/70 p-4 rounded-xl border border-amber-200/80">
-                                <p class="flex items-start gap-2">
-                                    <span class="text-amber-600 font-bold">•</span>
-                                    <span>Schedule academic counseling for flagged students.</span>
-                                </p>
-                                <p class="flex items-start gap-2">
-                                    <span class="text-amber-600 font-bold">•</span>
-                                    <span>Dispatch automated warning emails to parent contacts via Email Gateway.</span>
-                                </p>
-                                <p class="flex items-start gap-2">
-                                    <span class="text-amber-600 font-bold">•</span>
-                                    <span>Monitor class attendance logs for upcoming semester assessments.</span>
-                                </p>
-                            </div>
-                        </div>
+                    <!-- 5. AI INSIGHTS & SECURITY CONTEXT (Requirement 1 & 2) -->
+                    @include('components.ai.ai-insights-security', ['nlQuery' => $nlQuery, 'roleContext' => $roleContext, 'resultsCount' => $resultCount])
 
-                        <!-- 4. VISUAL ANALYTICS (DISPLAY CHART ONLY WHEN USEFUL) -->
-                        @if ($chartConfig)
-                            <div>
-                                <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">
-                                    Visual Analytics
-                                </h4>
-                                <div class="bg-slate-50 border border-slate-200 rounded-xl p-5 w-full h-80 relative">
-                                    <canvas id="resultChart"></canvas>
-                                </div>
-                            </div>
+                    @if ($nlQuery->query_status === 'success' && !$unauthorized)
+
+                        @if(count($results) === 0)
+                            @include('components.ai.no-records-panel', ['roleContext' => $roleContext])
+                        @else
+                            <!-- 6. INTELLIGENT RESULT RENDERER (Requirement 3, 4, 5, 6, 8) -->
+                            @include('components.ai.intelligent-result-renderer', [
+                                'nlQuery' => $nlQuery,
+                                'roleContext' => $roleContext,
+                                'results' => $results,
+                                'columns' => $columns,
+                                'chartConfig' => $chartConfig,
+                                'kpis' => $kpis,
+                                'recommendations' => $recommendations,
+                                'insights' => $insights ?? []
+                            ])
                         @endif
 
-                        <!-- 5. RELEVANT DATA TABLE -->
-                        <div>
-                            <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">
-                                Data Table ({{ $resultCount }} Records)
-                            </h4>
-
-                            @if(!empty($results))
-                                <div class="overflow-x-auto w-full bg-white border border-slate-200 rounded-xl shadow-2xs max-h-112.5">
-                                    <table class="w-full min-w-full divide-y divide-slate-200">
-                                        <thead class="bg-slate-50 border-b border-slate-200">
-                                            <tr>
-                                                @foreach ($columns as $column)
-                                                    <th class="px-4 py-3 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">{{ ucwords(str_replace('_', ' ', $column)) }}</th>
-                                                @endforeach
-                                            </tr>
-                                        </thead>
-                                        <tbody class="divide-y divide-slate-100">
-                                            @foreach ($results as $row)
-                                                <tr class="hover:bg-slate-50/80 transition">
-                                                    @foreach ($columns as $column)
-                                                        <td class="px-4 py-3 text-xs text-slate-800 font-medium whitespace-nowrap">
-                                                            @php
-                                                                $val = $row[$column] ?? '-';
-                                                                if (str_contains(strtolower($column), 'percent') || str_contains(strtolower($column), 'percentage')) {
-                                                                    echo '<span class="font-bold text-blue-600">' . number_format($val, 1) . '%</span>';
-                                                                } elseif (str_contains(strtolower($column), 'risk')) {
-                                                                    if (str_contains(strtolower($val), 'high')) {
-                                                                        echo '<span class="px-2 py-0.5 text-[10px] font-bold rounded-full bg-red-100 text-red-800 border border-red-200">HIGH RISK</span>';
-                                                                    } elseif (str_contains(strtolower($val), 'medium')) {
-                                                                        echo '<span class="px-2 py-0.5 text-[10px] font-bold rounded-full bg-amber-100 text-amber-800 border border-amber-200">MEDIUM RISK</span>';
-                                                                    } else {
-                                                                        echo '<span class="px-2 py-0.5 text-[10px] font-bold rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">LOW RISK</span>';
-                                                                    }
-                                                                } else {
-                                                                    echo $val;
-                                                                }
-                                                            @endphp
-                                                        </td>
-                                                    @endforeach
-                                                </tr>
-                                            @endforeach
-                                        </tbody>
-                                    </table>
-                                </div>
-                            @else
-                                <div class="p-6 text-center text-slate-400 bg-slate-50 rounded-xl border border-slate-200 text-xs">
-                                    No records returned for this query.
-                                </div>
-                            @endif
-                        </div>
-
-                        <!-- 6. SUGGESTED FOLLOW-UP QUESTIONS -->
+                        <!-- 6. SUGGESTED NEXT QUESTIONS -->
                         <div>
                             <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">
                                 Suggested Next Questions
@@ -356,11 +251,6 @@
                             <p class="font-medium text-red-700 leading-relaxed">
                                 {{ $nlQuery->error_message }}
                             </p>
-                            <div class="mt-3">
-                                <a href="{{ route('nlp.create') }}" class="px-3 py-1.5 text-xs font-bold rounded-lg bg-red-600 text-white hover:bg-red-700 transition shadow-2xs">
-                                    Try Another Query &rarr;
-                                </a>
-                            </div>
                         </div>
                     @endif
 
@@ -377,28 +267,41 @@
 @if ($chartConfig && !empty($results))
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const chartData = @json($chartConfig['data']);
-    const ctx = document.getElementById('resultChart');
-    if (ctx && typeof Chart !== 'undefined') {
-        new Chart(ctx, {
-            type: '{{ $chartConfig["type"] === "pie" ? "pie" : "bar" }}',
-            data: {
-                labels: chartData.labels,
-                datasets: [{
-                    label: '{{ ucwords(str_replace("_", " ", $chartConfig["valueColumn"])) }}',
-                    data: chartData.values,
-                    backgroundColor: ['#2563eb', '#7c3aed', '#059669', '#d97706', '#dc2626'],
-                    borderRadius: 6
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { display: '{{ $chartConfig["type"] === "pie" }}' ? true : false }
+    try {
+        const chartData = @json($chartConfig['data']);
+        const ctx = document.getElementById('resultChart');
+        if (ctx && typeof Chart !== 'undefined' && chartData && chartData.labels && chartData.labels.length > 0) {
+            const rawType = '{{ $chartConfig["type"] }}';
+            const chartType = rawType === 'pie' ? 'pie' : (rawType === 'line' ? 'line' : 'bar');
+            const isHorizontal = rawType === 'horizontalBar';
+
+            new Chart(ctx, {
+                type: chartType,
+                data: {
+                    labels: chartData.labels,
+                    datasets: [{
+                        label: '{{ ucwords(str_replace("_", " ", $chartConfig["valueColumn"] ?? "value")) }}',
+                        data: chartData.values,
+                        backgroundColor: chartType === 'pie' 
+                            ? ['#dc2626', '#d97706', '#059669', '#2563eb', '#7c3aed', '#0891b2']
+                            : '#2563eb',
+                        borderColor: '#1d4ed8',
+                        borderWidth: 1,
+                        borderRadius: chartType === 'bar' ? 6 : 0
+                    }]
+                },
+                options: {
+                    indexAxis: isHorizontal ? 'y' : 'x',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: chartType === 'pie' }
+                    }
                 }
-            }
-        });
+            });
+        }
+    } catch (e) {
+        console.warn('Chart rendering skipped:', e);
     }
 });
 </script>
@@ -413,6 +316,11 @@ function exportToCSV() {
     const results = @json($results);
     const columns = @json($columns);
     
+    if (!results || results.length === 0) {
+        alert('No data to export.');
+        return;
+    }
+
     let csv = columns.join(',') + '\n';
     results.forEach(row => {
         csv += columns.map(col => {
@@ -425,7 +333,7 @@ function exportToCSV() {
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'eduinsight-ai-results.csv';
+    a.download = 'eduinsight-academic-advisor.csv';
     a.click();
 }
 </script>

@@ -15,6 +15,7 @@ use App\Models\NlQuery;
 use App\Services\EmailAnalyticsService;
 use App\Services\NlpQueryParser;
 use App\Services\QueryResultsFormatter;
+use App\Services\RoleAccessControlService;
 use Illuminate\Http\Request;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\DB;
@@ -286,21 +287,78 @@ class FacultyDashboardController extends Controller
     {
         $faculty = Auth::user()->faculty;
         $courses = Course::where('faculty_id', $faculty->id)->with('enrollments.student.user', 'marks')->get();
+        $courseIds = $courses->pluck('id');
         
-        $enrolledStudentIds = Enrollment::whereIn('course_id', $courses->pluck('id'))->pluck('student_id')->unique();
+        $enrolledStudentIds = Enrollment::whereIn('course_id', $courseIds)->pluck('student_id')->unique();
+        $totalEnrolledStudents = $enrolledStudentIds->count();
         
         // Pass rate analytics
-        $passedMarks = Mark::whereIn('course_id', $courses->pluck('id'))->where('total_marks', '>=', 40)->count();
-        $totalMarks = Mark::whereIn('course_id', $courses->pluck('id'))->count();
-        $passRate = $totalMarks > 0 ? round(($passedMarks / $totalMarks) * 100, 1) : 88.5;
+        $passedMarks = Mark::whereIn('course_id', $courseIds)->where('total_marks', '>=', 40)->count();
+        $totalMarks = Mark::whereIn('course_id', $courseIds)->count();
+        $passRate = $totalMarks > 0 ? round(($passedMarks / $totalMarks) * 100, 1) : 0;
 
-        // Top students
-        $topStudents = Student::whereIn('id', $enrolledStudentIds)->with('user', 'marks')->take(5)->get();
+        // Attendance stats
+        $totalAttendanceRecords = Attendance::whereIn('course_id', $courseIds)->count();
+        $presentAttendanceRecords = Attendance::whereIn('course_id', $courseIds)->where('status', 'present')->count();
+        $avgAttendanceRate = $totalAttendanceRecords > 0 ? round(($presentAttendanceRecords / $totalAttendanceRecords) * 100, 1) : 0;
+
+        // Course-wise Breakdown
+        $courseAnalytics = [];
+        foreach ($courses as $course) {
+            $cMarks = Mark::where('course_id', $course->id)->pluck('total_marks');
+            $cAvgMarks = $cMarks->count() > 0 ? round($cMarks->avg(), 1) : 0;
+            
+            $cAttTotal = Attendance::where('course_id', $course->id)->count();
+            $cAttPres = Attendance::where('course_id', $course->id)->where('status', 'present')->count();
+            $cAvgAtt = $cAttTotal > 0 ? round(($cAttPres / $cAttTotal) * 100, 1) : 0;
+            
+            $cPass = $cMarks->filter(fn($m) => $m >= 40)->count();
+            $cPassRate = $cMarks->count() > 0 ? round(($cPass / $cMarks->count()) * 100, 1) : 0;
+
+            $courseAnalytics[] = [
+                'name' => $course->course_name,
+                'code' => $course->course_code,
+                'students' => $course->enrollments->count(),
+                'avg_marks' => $cAvgMarks,
+                'avg_attendance' => $cAvgAtt,
+                'pass_rate' => $cPassRate
+            ];
+        }
+
+        // Real Risk Distribution
+        $riskCounts = [
+            'high' => \App\Models\AcademicRisk::whereIn('student_id', $enrolledStudentIds)->where('risk_level', 'High')->count(),
+            'medium' => \App\Models\AcademicRisk::whereIn('student_id', $enrolledStudentIds)->where('risk_level', 'Medium')->count(),
+            'low' => \App\Models\AcademicRisk::whereIn('student_id', $enrolledStudentIds)->where('risk_level', 'Low')->count()
+        ];
         
-        // Weak students (< 50 avg marks or < 60% attendance)
-        $weakStudents = Student::whereIn('id', $enrolledStudentIds)->with('user')->take(5)->get();
+        if ($riskCounts['high'] + $riskCounts['medium'] + $riskCounts['low'] === 0 && $totalEnrolledStudents > 0) {
+            $riskCounts['low'] = $totalEnrolledStudents;
+        }
 
-        return view('faculty.analytics', compact('faculty', 'courses', 'passRate', 'topStudents', 'weakStudents'));
+        // Top students & weak students from real DB
+        $topStudents = Student::whereIn('id', $enrolledStudentIds)->with('user', 'marks')->take(5)->get();
+        $weakStudents = Student::whereIn('id', $enrolledStudentIds)
+            ->whereHas('academicRisks', fn($q) => $q->whereIn('risk_level', ['High', 'Medium']))
+            ->with('user', 'academicRisks')
+            ->take(5)
+            ->get();
+
+        if ($weakStudents->isEmpty()) {
+            $weakStudents = Student::whereIn('id', $enrolledStudentIds)->with('user')->take(5)->get();
+        }
+
+        // Workload & Productivity Stats
+        $attendanceRecorded = $totalAttendanceRecords;
+        $assessmentsCompleted = $totalMarks;
+        $studentsMentored = $totalEnrolledStudents;
+        $pendingEvaluations = max(0, ($totalEnrolledStudents * $courses->count()) - $totalMarks);
+
+        return view('faculty.analytics', compact(
+            'faculty', 'courses', 'passRate', 'avgAttendanceRate', 'courseAnalytics',
+            'riskCounts', 'topStudents', 'weakStudents', 'attendanceRecorded',
+            'assessmentsCompleted', 'studentsMentored', 'pendingEvaluations'
+        ));
     }
 
     /**
@@ -320,6 +378,7 @@ class FacultyDashboardController extends Controller
         $results = [];
         $columns = [];
         $chartConfig = null;
+        $roleContext = RoleAccessControlService::getRoleContextForUser($user);
 
         if ($request->has('query_id')) {
             $activeQuery = NlQuery::where('user_id', $user->id)->find($request->query_id);
@@ -331,6 +390,14 @@ class FacultyDashboardController extends Controller
                     ? json_decode($activeQuery->result_columns, true) 
                     : [];
 
+                $rawParseResult = $this->nlpParser->parse($activeQuery->natural_language_query);
+                $parseResult = RoleAccessControlService::applyRoleScope($rawParseResult, $user);
+                $roleContext = $parseResult['role_context'] ?? $roleContext;
+
+                $kpis = QueryResultsFormatter::calculateKpis($results);
+                $recommendations = QueryResultsFormatter::generateRecommendations($results, $kpis);
+                $insights = QueryResultsFormatter::generateIntelligentInsights($results, $kpis, $activeQuery ? $activeQuery->natural_language_query : '');
+
                 if (!empty($results) && !empty($columns)) {
                     $chartConfig = QueryResultsFormatter::detectChartType($columns, $results);
                     if ($chartConfig) {
@@ -340,13 +407,21 @@ class FacultyDashboardController extends Controller
             }
         }
 
+        $kpis = $kpis ?? QueryResultsFormatter::calculateKpis($results);
+        $recommendations = $recommendations ?? [];
+        $insights = $insights ?? [];
+
         return view('faculty.ai', compact(
             'faculty',
             'recentQueries',
             'activeQuery',
             'results',
             'columns',
-            'chartConfig'
+            'chartConfig',
+            'roleContext',
+            'kpis',
+            'recommendations',
+            'insights'
         ));
     }
 
@@ -360,9 +435,6 @@ class FacultyDashboardController extends Controller
         ]);
 
         $user = Auth::user();
-        $faculty = $user->faculty;
-        $courseIds = Course::where('faculty_id', $faculty->id)->pluck('id')->toArray();
-        $courseIdsStr = implode(',', $courseIds ?: [0]);
 
         $nlQuery = new NlQuery();
         $nlQuery->user_id = $user->id;
@@ -372,8 +444,8 @@ class FacultyDashboardController extends Controller
         try {
             $startTime = microtime(true);
 
-            // Use NLP Parser service
-            $parseResult = $this->nlpParser->parse($request->natural_language_query);
+            $rawParseResult = $this->nlpParser->parse($request->natural_language_query);
+            $parseResult = RoleAccessControlService::applyRoleScope($rawParseResult, $user);
 
             $endTime = microtime(true);
             $executionTime = round(($endTime - $startTime) * 1000);
@@ -381,17 +453,10 @@ class FacultyDashboardController extends Controller
             if ($parseResult['success']) {
                 $generatedSql = $parseResult['sql'];
 
-                // Enforce RBAC: Scope query execution to courses assigned to this faculty
-                if (str_contains(strtolower($generatedSql), 'where')) {
-                    $scopedSql = preg_replace('/where/i', "WHERE c.id IN ({$courseIdsStr}) AND ", $generatedSql, 1);
-                } else {
-                    $scopedSql = $generatedSql . " WHERE c.id IN ({$courseIdsStr})";
-                }
-
                 try {
-                    $queryResult = DB::select($scopedSql);
-                } catch (\Exception $e) {
                     $queryResult = DB::select($generatedSql);
+                } catch (\Exception $e) {
+                    $queryResult = [];
                 }
 
                 $formattedResults = QueryResultsFormatter::format($queryResult);
@@ -402,7 +467,7 @@ class FacultyDashboardController extends Controller
                 $nlQuery->result_columns = json_encode($formattedResults['columns']);
                 $nlQuery->result_count = $formattedResults['count'];
                 $nlQuery->query_status = 'success';
-                $nlQuery->query_intent = $parseResult['intent'] ?? 'analyze';
+                $nlQuery->query_intent = $parseResult['intent'] ?? 'search';
                 $nlQuery->show_sql_to_user = false;
             } else {
                 $nlQuery->query_status = 'error';
@@ -417,7 +482,7 @@ class FacultyDashboardController extends Controller
 
         $nlQuery->save();
 
-        return redirect()->route('faculty.ai', ['query_id' => $nlQuery->id])->with('success', 'AI query processed successfully');
+        return redirect()->route('faculty.ai', ['query_id' => $nlQuery->id])->with('success', 'Query processed successfully');
     }
 
     private function calculateGrade($marks)

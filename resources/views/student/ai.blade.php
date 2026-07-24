@@ -35,55 +35,108 @@
             </div>
 
             <div class="flex items-center gap-2 shrink-0">
+                <span class="px-3 py-1 text-xs font-bold uppercase tracking-wider rounded-full border {{ $roleContext['scope_badge_class'] ?? 'bg-orange-100 text-orange-800 border-orange-300' }}">
+                    {{ $roleContext['scope_badge_label'] ?? 'Personal Scope' }}
+                </span>
                 <a href="{{ route('nlp.queries') }}" class="px-3.5 py-2 text-xs font-bold rounded-xl bg-purple-800/60 hover:bg-purple-700/80 text-purple-100 transition border border-purple-600/50 flex items-center gap-1.5 shadow-2xs">
                     <i class="fas fa-history"></i>
                     <span>Query History</span>
-                </a>
-                <a href="{{ route('student.dashboard') }}" class="px-3.5 py-2 text-xs font-bold rounded-xl bg-white/10 hover:bg-white/20 text-white transition border border-white/20">
-                    <i class="fas fa-arrow-left"></i> Dashboard
                 </a>
             </div>
         </div>
     </div>
 
-    <!-- SUGGESTED STUDENT QUESTIONS -->
+    <!-- STUDENT SUMMARY CARD (Personal Metrics Focus) -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <!-- Attendance -->
+        <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-xs">
+            <div class="flex items-center justify-between text-xs font-bold text-slate-400 uppercase">
+                <span>Personal Attendance</span>
+                <i class="fas fa-calendar-check text-blue-500"></i>
+            </div>
+            <div class="text-2xl font-black text-slate-900 mt-1">{{ $attendancePercent }}%</div>
+            <span class="text-[11px] {{ $attendancePercent >= 75 ? 'text-emerald-600 font-bold' : 'text-red-600 font-bold' }}">
+                {{ $attendancePercent >= 75 ? '75% Required Threshold Met' : 'Below 75% Requirement' }}
+            </span>
+        </div>
+
+        <!-- Marks -->
+        <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-xs">
+            <div class="flex items-center justify-between text-xs font-bold text-slate-400 uppercase">
+                <span>Average Score</span>
+                <i class="fas fa-award text-amber-500"></i>
+            </div>
+            <div class="text-2xl font-black text-amber-600 mt-1">{{ $avgMarks }}</div>
+            <span class="text-[11px] text-slate-500 font-medium">Evaluated Assessments</span>
+        </div>
+
+        <!-- CGPA -->
+        <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-xs">
+            <div class="flex items-center justify-between text-xs font-bold text-slate-400 uppercase">
+                <span>Current CGPA</span>
+                <i class="fas fa-graduation-cap text-purple-500"></i>
+            </div>
+            <div class="text-2xl font-black text-purple-600 mt-1">{{ $cgpa }} <span class="text-xs text-slate-400 font-normal">/ 4.0</span></div>
+            <span class="text-[11px] text-emerald-600 font-bold">Good Academic Standing</span>
+        </div>
+
+        <!-- Risk Status -->
+        <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-xs">
+            <div class="flex items-center justify-between text-xs font-bold text-slate-400 uppercase">
+                <span>Risk Evaluation</span>
+                <i class="fas fa-shield-alt text-emerald-500"></i>
+            </div>
+            <div class="text-2xl font-black {{ $riskLevel === 'High' ? 'text-red-600' : ($riskLevel === 'Medium' ? 'text-amber-600' : 'text-emerald-600') }} mt-1">
+                {{ strtoupper($riskLevel) }} RISK
+            </div>
+            <span class="text-[11px] text-slate-500 font-medium">Personal Scope Protection</span>
+        </div>
+    </div>
+
+    <!-- SUGGESTED STUDENT QUESTIONS (Task 1) -->
     <div class="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-xs">
         <div class="flex items-center justify-between mb-3 px-1">
             <span class="text-xs font-extrabold uppercase tracking-wider text-purple-700 flex items-center gap-1.5">
-                <i class="fas fa-lightbulb text-amber-500"></i> Sample Questions You Can Ask:
+                <i class="fas fa-lightbulb text-amber-500"></i> Suggested Questions:
             </span>
             <span class="text-[11px] text-slate-400 font-medium">Click to populate prompt</span>
         </div>
 
         <div class="flex flex-wrap gap-2">
-            <button type="button" @click="setQuery('How many marks do I need for A Grade in Data Structures?')"
+            <button type="button" @click="setQuery('Predict my GPA based on current marks')"
                     class="px-3 py-2 text-xs font-semibold rounded-xl bg-purple-50 hover:bg-purple-100 text-purple-800 border border-purple-200/80 transition text-left flex items-center gap-2">
-                <i class="fas fa-calculator text-purple-600 text-xs"></i>
-                <span>How many marks for Grade A?</span>
+                <i class="fas fa-chart-line text-purple-600 text-xs"></i>
+                <span>Predict my GPA</span>
             </button>
 
-            <button type="button" @click="setQuery('How many classes can I miss and maintain 75% attendance?')"
+            <button type="button" @click="setQuery('Show my weak subjects and study topics')"
+                    class="px-3 py-2 text-xs font-semibold rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200/80 transition text-left flex items-center gap-2">
+                <i class="fas fa-exclamation-triangle text-amber-600 text-xs"></i>
+                <span>Show my weak subjects</span>
+            </button>
+
+            <button type="button" @click="setQuery('Show attendance trend across all subjects')"
                     class="px-3 py-2 text-xs font-semibold rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-800 border border-blue-200/80 transition text-left flex items-center gap-2">
                 <i class="fas fa-calendar-check text-blue-600 text-xs"></i>
+                <span>Show attendance trend</span>
+            </button>
+
+            <button type="button" @click="setQuery('How many classes can I miss and keep 75% attendance?')"
+                    class="px-3 py-2 text-xs font-semibold rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-800 border border-indigo-200/80 transition text-left flex items-center gap-2">
+                <i class="fas fa-clock text-indigo-600 text-xs"></i>
                 <span>How many classes can I miss?</span>
             </button>
 
-            <button type="button" @click="setQuery('Predict my semester GPA based on current marks')"
-                    class="px-3 py-2 text-xs font-semibold rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200/80 transition text-left flex items-center gap-2">
-                <i class="fas fa-chart-line text-emerald-600 text-xs"></i>
-                <span>Predict my semester GPA</span>
-            </button>
-
-            <button type="button" @click="setQuery('Which subject is my weakest and needs more study time?')"
-                    class="px-3 py-2 text-xs font-semibold rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200/80 transition text-left flex items-center gap-2">
-                <i class="fas fa-exclamation-triangle text-amber-600 text-xs"></i>
-                <span>Which subject is weakest?</span>
-            </button>
-
             <button type="button" @click="setQuery('Am I eligible for campus placement drives?')"
-                    class="px-3 py-2 text-xs font-semibold rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-800 border border-indigo-200/80 transition text-left flex items-center gap-2">
-                <i class="fas fa-briefcase text-indigo-600 text-xs"></i>
+                    class="px-3 py-2 text-xs font-semibold rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200/80 transition text-left flex items-center gap-2">
+                <i class="fas fa-briefcase text-emerald-600 text-xs"></i>
                 <span>Am I eligible for placement?</span>
+            </button>
+
+            <button type="button" @click="setQuery('Suggest a personalized study plan for exams')"
+                    class="px-3 py-2 text-xs font-semibold rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-800 border border-rose-200/80 transition text-left flex items-center gap-2">
+                <i class="fas fa-book-open text-rose-600 text-xs"></i>
+                <span>Suggest study plan</span>
             </button>
         </div>
     </div>
@@ -109,82 +162,48 @@
         </form>
     </div>
 
-    <!-- ACTIVE QUERY RESULTS DISPLAY -->
+    <!-- ACTIVE QUERY RESULTS DISPLAY (Copilot / Gemini Style Student AI Response) -->
     @if(isset($activeQuery) && $activeQuery)
-        <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-xs space-y-6">
+        <div class="bg-white border border-purple-200 rounded-3xl p-6 sm:p-8 shadow-sm space-y-6">
             
-            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100">
-                <div>
-                    <div class="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-purple-600 mb-1">
-                        <i class="fas fa-check-circle text-emerald-500"></i> Query Execution Completed
+            <!-- Student AI Response Header -->
+            <div class="flex items-start gap-3 border-b border-purple-100 pb-4">
+                <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-purple-600 to-indigo-600 text-white flex items-center justify-center text-lg font-bold shadow-md shrink-0">
+                    <i class="fas fa-sparkles text-amber-300"></i>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <div class="flex items-center justify-between">
+                        <span class="text-[11px] font-extrabold uppercase tracking-wider text-purple-700">EduInsight Student AI Response</span>
+                        <span class="text-[10px] font-bold text-slate-400 font-mono">{{ $activeQuery->created_at ? $activeQuery->created_at->diffForHumans() : 'Just now' }}</span>
                     </div>
-                    <h2 class="text-lg font-black text-slate-900 tracking-tight">
+                    <h3 class="text-base sm:text-lg font-black text-slate-900 mt-0.5">
                         "{{ $activeQuery->natural_language_query }}"
-                    </h2>
-                </div>
-
-                <div class="flex items-center gap-2 shrink-0">
-                    <span class="px-2.5 py-1 rounded-lg bg-slate-100 text-slate-600 text-xs font-mono font-bold border border-slate-200">
-                        ⚡ {{ $activeQuery->execution_time ?? 128 }}ms
-                    </span>
-                    <span class="px-2.5 py-1 rounded-lg bg-purple-50 text-purple-700 text-xs font-bold border border-purple-100">
-                        Confidence: 99.2%
-                    </span>
-                    <button type="button" onclick="window.print()" class="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs border border-slate-200">
-                        <i class="fas fa-download text-xs"></i> PDF
-                    </button>
-                </div>
-            </div>
-
-            <!-- Executive Summary & Reasoning -->
-            <div class="bg-purple-50/60 border border-purple-100 rounded-2xl p-4 sm:p-5">
-                <h3 class="text-xs font-extrabold uppercase text-purple-900 tracking-wider mb-1 flex items-center gap-2">
-                    <i class="fas fa-brain text-purple-600"></i> AI Analysis & Personal Recommendation
-                </h3>
-                <p class="text-xs sm:text-sm text-slate-700 font-medium leading-relaxed">
-                    Based on your active enrollment records, a total of <strong>{{ count($results) }} records</strong> were evaluated. Maintaining your current study strategy will ensure you meet all placement and graduation targets.
-                </p>
-            </div>
-
-            <!-- Dynamic Chart Visualization -->
-            @if(isset($chartConfig) && $chartConfig)
-                <div class="bg-slate-50 border border-slate-200 rounded-2xl p-5">
-                    <h3 class="text-xs font-extrabold uppercase tracking-wider text-slate-800 mb-3 flex items-center gap-2">
-                        <i class="fas fa-chart-bar text-purple-600"></i> Dynamic Data Visualization
                     </h3>
-                    <div class="h-64 relative">
-                        <canvas id="studentAiResultChart"></canvas>
-                    </div>
+                </div>
+            </div>
+
+            <!-- Only display notice if cross-department or unauthorized filter occurred -->
+            @if(!empty($roleContext['is_cross_dept']))
+                <div class="p-4 rounded-2xl bg-purple-50 border border-purple-200 text-xs font-semibold text-purple-900 flex items-center gap-2">
+                    <i class="fas fa-info-circle text-purple-600 text-sm"></i>
+                    <span>Notice: Results are evaluated specifically for your personal student records in {{ $roleContext['department'] ?? 'your department' }}.</span>
                 </div>
             @endif
 
-            <!-- Data Table -->
-            @if(!empty($results) && !empty($columns))
-                <div>
-                    <h3 class="text-xs font-extrabold uppercase tracking-wider text-slate-800 mb-3 flex items-center gap-2">
-                        <i class="fas fa-table text-blue-600"></i> Supporting Personal Data ({{ count($results) }} Rows)
-                    </h3>
-                    <div class="table-responsive border border-slate-200 rounded-xl overflow-hidden">
-                        <table class="table w-full text-left border-collapse">
-                            <thead>
-                                <tr class="bg-slate-100 text-[11px] font-extrabold uppercase tracking-wider text-slate-600">
-                                    @foreach($columns as $col)
-                                        <th class="py-3 px-4">{{ ucfirst(str_replace('_', ' ', $col)) }}</th>
-                                    @endforeach
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-slate-100 text-xs">
-                                @foreach($results as $row)
-                                    <tr class="hover:bg-slate-50/80 transition">
-                                        @foreach($columns as $col)
-                                            <td class="py-3 px-4 text-slate-800 font-medium">{{ $row[$col] ?? 'N/A' }}</td>
-                                        @endforeach
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+            @if(count($results) === 0)
+                @include('components.ai.no-records-panel', ['roleContext' => $roleContext])
+            @else
+                <!-- INTELLIGENT RESULT RENDERER -->
+                @include('components.ai.intelligent-result-renderer', [
+                    'nlQuery' => $activeQuery,
+                    'roleContext' => $roleContext,
+                    'results' => $results,
+                    'columns' => $columns,
+                    'chartConfig' => $chartConfig,
+                    'kpis' => $kpis ?? [],
+                    'recommendations' => $recommendations ?? [],
+                    'insights' => $insights ?? []
+                ])
             @endif
 
         </div>

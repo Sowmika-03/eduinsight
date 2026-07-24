@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\NlQuery;
 use App\Services\NlpQueryParser;
 use App\Services\QueryResultsFormatter;
+use App\Services\RoleAccessControlService;
 use Illuminate\Http\Request;
 use Auth;
 
@@ -35,13 +36,14 @@ class NlQueryController extends Controller
 
     public function create()
     {
-        return view('nlp.create-query');
+        $roleContext = RoleAccessControlService::getRoleContextForUser(Auth::user());
+        return view('nlp.create-query', compact('roleContext'));
     }
 
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'natural_language_query' => 'required|string|min:5|max:500',
+            'natural_language_query' => 'required|string|min:3|max:500',
         ]);
 
         $nlQuery = new NlQuery();
@@ -52,17 +54,25 @@ class NlQueryController extends Controller
         try {
             $startTime = microtime(true);
 
-            $parseResult = $this->nlpParser->parse($validated['natural_language_query']);
+            $rawParseResult = $this->nlpParser->parse($validated['natural_language_query']);
+
+            // Apply Role-Based Access Scoping
+            $parseResult = RoleAccessControlService::applyRoleScope($rawParseResult, Auth::user());
 
             $endTime = microtime(true);
             $executionTime = round(($endTime - $startTime) * 1000);
 
             if ($parseResult['success']) {
                 $generatedSql = $parseResult['sql'];
-                $queryResult = \DB::select($generatedSql);
 
-                // Format results for display
-                $formattedResults = QueryResultsFormatter::format($queryResult);
+                if (!empty($parseResult['unauthorized'])) {
+                    $queryResult = [];
+                    $formattedResults = ['rows' => [], 'columns' => [], 'count' => 0];
+                } else {
+                    $queryResult = \DB::select($generatedSql);
+                    $formattedResults = QueryResultsFormatter::format($queryResult);
+                    $formattedResults['rows'] = QueryResultsFormatter::enrichStudentPredictions($formattedResults['rows']);
+                }
 
                 $nlQuery->generated_sql = $generatedSql;
                 $nlQuery->query_result = json_encode($queryResult);
@@ -70,9 +80,8 @@ class NlQueryController extends Controller
                 $nlQuery->result_columns = json_encode($formattedResults['columns']);
                 $nlQuery->result_count = $formattedResults['count'];
                 $nlQuery->query_status = 'success';
-                $nlQuery->query_intent = $parseResult['intent'];
+                $nlQuery->query_intent = $parseResult['intent'] ?? 'search';
                 
-                // Only show SQL to admin by default
                 $nlQuery->show_sql_to_user = Auth::user()->role->slug === 'admin';
             } else {
                 $nlQuery->query_status = 'error';
@@ -106,19 +115,58 @@ class NlQueryController extends Controller
             ? json_decode($nlQuery->result_columns, true) 
             : [];
 
-        // Detect chart type
+        // Reparse query metadata dynamically & apply role scope
+        $rawParseResult = $this->nlpParser->parse($nlQuery->natural_language_query);
+        $parseResult = RoleAccessControlService::applyRoleScope($rawParseResult, Auth::user());
+
+        $intent = $parseResult['intent'] ?? 'search';
+        $entities = $parseResult['entities'] ?? [];
+        $filters = $parseResult['filters'] ?? [];
+        $unauthorized = $parseResult['unauthorized'] ?? false;
+        $authorizationMessage = $parseResult['authorization_message'] ?? null;
+        $roleContext = $parseResult['role_context'] ?? [];
+
+        // Enrich student predictive insights
+        $results = QueryResultsFormatter::enrichStudentPredictions($results);
+
+        // Calculate dynamic KPIs
+        $kpis = QueryResultsFormatter::calculateKpis($results, $entities, $filters);
+
+        // Generate Phase 3 AI Intelligence Assets
+        $aiSummary = QueryResultsFormatter::generateSummary(
+            $nlQuery->natural_language_query,
+            $results,
+            $kpis,
+            $intent,
+            $entities
+        );
+
+        $recommendations = QueryResultsFormatter::generateRecommendations($results, $kpis, $intent);
+        $insights = QueryResultsFormatter::generateIntelligentInsights($results, $kpis, $nlQuery->natural_language_query, $entities);
+        $explainability = QueryResultsFormatter::generateExplainability($nlQuery->natural_language_query, $results, $kpis, $intent);
+        $executiveReport = QueryResultsFormatter::generateExecutiveReport($nlQuery->natural_language_query, $results, $kpis, $intent, $entities);
+
+        // Detect chart configuration dynamically based on intent & dataset
         $chartConfig = null;
         if (!empty($results) && !empty($columns)) {
-            $chartConfig = QueryResultsFormatter::detectChartType($columns, $results);
+            $chartConfig = QueryResultsFormatter::detectChartType($columns, $results, $intent, $entities);
             if ($chartConfig) {
                 $chartConfig['data'] = QueryResultsFormatter::prepareChartData($results, $chartConfig);
             }
         }
 
-        // Determine if SQL should be visible
+        // Generate dynamic context-aware follow-up suggestions
+        $dynamicFollowups = QueryResultsFormatter::generateFollowupQuestions(
+            $nlQuery->natural_language_query,
+            $entities,
+            $intent
+        );
+
         $showSql = Auth::user()->role->slug === 'admin' || $nlQuery->show_sql_to_user;
 
-        return view('nlp.show-query', compact('nlQuery', 'results', 'columns', 'chartConfig', 'showSql'));
+        return view('nlp.show-query', compact(
+            'nlQuery', 'results', 'columns', 'kpis', 'aiSummary', 'chartConfig', 'showSql', 'entities', 'filters', 'intent', 'dynamicFollowups',
+            'recommendations', 'insights', 'explainability', 'executiveReport', 'unauthorized', 'authorizationMessage', 'roleContext'
+        ));
     }
 }
-
